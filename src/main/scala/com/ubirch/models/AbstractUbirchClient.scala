@@ -61,6 +61,9 @@ object AbstractUbirchClient extends LazyLogging {
 
   def toBase64(data: Array[Byte]): String = Base64.getEncoder.encodeToString(data)
   def toHex(data: Array[Byte]): String = Hex.encodeHexString(data)
+
+  def toBytesFromHex(data: String): Array[Byte] = Hex.decodeHex(data)
+
   def createServerKey(serverKeyBytes: Array[Byte]): PubKey = {
     try
       GeneratorKeyFactory.getPubKey(serverKeyBytes, Curve.Ed25519)

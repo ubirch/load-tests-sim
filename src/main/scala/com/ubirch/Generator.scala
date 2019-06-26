@@ -17,7 +17,7 @@ class Generator(clientUUID: UUID, clientKey: PrivKey, serverUUID: UUID, serverKe
   WriteFileControl(numberOfMessagesPerFile, path, directory, fileName, ext)
     .secured { writer =>
       Iterator
-        .continually(payloadGenerator.getOne)
+        .continually(payloadGenerator.getOneAsString)
         .take(maxNumberOfMessages)
         .foreach { case (_, upp, hash) => writer.append(upp + ";" + hash) }
     }
