@@ -1,10 +1,10 @@
 package com.ubirch
 
-import java.util.{Base64, UUID}
+import java.util.{ Base64, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
-import com.ubirch.crypto.{PrivKey, PubKey}
-import com.ubirch.models.{AbstractUbirchClient, FileControl, PayloadGenerator, SimpleProtocolImpl}
+import com.ubirch.crypto.{ PrivKey, PubKey }
+import com.ubirch.models.{ AbstractUbirchClient, FileControl, PayloadGenerator, SimpleProtocolImpl }
 import com.ubirch.util.ConfigBase
 
 class Generator(clientUUID: UUID, clientKey: PrivKey, serverUUID: UUID, serverKey: PubKey) extends ConfigBase with LazyLogging {
@@ -12,6 +12,7 @@ class Generator(clientUUID: UUID, clientKey: PrivKey, serverUUID: UUID, serverKe
   val numberOfMessagesPerFile: Int = conf.getInt("generator.numberOfMessagesPerFile")
   val maxNumberOfMessages: Int = conf.getInt("generator.maxNumberOfMessages")
   val path: String = conf.getString("generator.path")
+  val directory: String = conf.getString("generator.directory")
   val fileName: String = conf.getString("generator.fileName")
   val ext: String = conf.getString("generator.ext")
 
@@ -20,7 +21,7 @@ class Generator(clientUUID: UUID, clientKey: PrivKey, serverUUID: UUID, serverKe
 
   logger.info(maxNumberOfMessages / numberOfMessagesPerFile + " files will be created.")
 
-  FileControl(numberOfMessagesPerFile, path, fileName, ext)
+  FileControl(numberOfMessagesPerFile, path, directory, fileName, ext)
     .secured { writer =>
       Iterator
         .continually(payloadGenerator.getOne)

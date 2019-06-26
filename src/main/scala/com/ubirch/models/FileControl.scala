@@ -1,19 +1,14 @@
 package com.ubirch.models
 
-import java.io.BufferedWriter
-import java.io.FileWriter
+import java.io.{ BufferedWriter, File, FileWriter }
 
 import com.typesafe.scalalogging.LazyLogging
 
-case class FileControl(lines: Int, path: String, fileName: String, ext: String) extends LazyLogging {
+case class FileControl(lines: Int, path: String, directory: String, fileName: String, ext: String) extends LazyLogging {
 
   private var currentSuffix = 0
   private var currentLines = 0
   private var writer: Option[BufferedWriter] = Option(getWriter)
-
-  def fn = (if (path.isEmpty) path else path + "/") + fileName + "_" + currentSuffix + "." + ext
-
-  private def getWriter = new BufferedWriter(new FileWriter(fn, true))
 
   def append(newLine: String) = {
 
@@ -30,8 +25,6 @@ case class FileControl(lines: Int, path: String, fileName: String, ext: String) 
 
   }
 
-  def close() = writer.foreach(_.close())
-
   def secured(f: FileControl => Unit) = {
     try {
       f(this)
@@ -44,5 +37,30 @@ case class FileControl(lines: Int, path: String, fileName: String, ext: String) 
     }
 
   }
+
+  def fn = {
+    val p = if (path.isEmpty) path else path + "/"
+    val d = if (directory.isEmpty) directory else directory + "/"
+    ensureDirectory(p + d)
+    p + d + fileName + "_" + currentSuffix + "." + ext
+  }
+
+  def ensureDirectory(directory: String) = {
+    if (directory.nonEmpty) {
+      val file = new File(directory)
+      if (!file.exists()) {
+        logger.info("Creating directory ...")
+        file.mkdir()
+      } else {
+        false
+      }
+    } else {
+      true
+    }
+  }
+
+  def close() = writer.foreach(_.close())
+
+  private def getWriter = new BufferedWriter(new FileWriter(fn, true))
 
 }
