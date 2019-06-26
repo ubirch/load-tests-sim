@@ -4,7 +4,7 @@ import java.io.{ BufferedWriter, File, FileWriter }
 
 import com.typesafe.scalalogging.LazyLogging
 
-case class FileControl(lines: Int, path: String, directory: String, fileName: String, ext: String) extends LazyLogging {
+case class WriteFileControl(lines: Int, path: String, directory: String, fileName: String, ext: String) extends LazyLogging {
 
   private var currentSuffix = 0
   private var currentLines = 0
@@ -25,7 +25,7 @@ case class FileControl(lines: Int, path: String, directory: String, fileName: St
 
   }
 
-  def secured(f: FileControl => Unit) = {
+  def secured(f: WriteFileControl => Unit) = {
     try {
       f(this)
     } catch {

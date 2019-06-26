@@ -1,9 +1,15 @@
 package com.ubirch.simulations
 
+import com.ubirch.models.ReadFileControl
+import com.ubirch.util.FileConfigs
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
-class SendUPPSimulation extends Simulation { // 3
+class SendUPPSimulation extends Simulation with FileConfigs { // 3
+
+  ReadFileControl(path, directory, fileName, ext).read { l =>
+    println("dfadfsd:" + l)
+  }
 
   val httpProtocol = http // 4
     .baseUrl("http://computer-database.gatling.io") // 5
