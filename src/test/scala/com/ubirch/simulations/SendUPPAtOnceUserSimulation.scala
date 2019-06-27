@@ -28,6 +28,7 @@ class SendUPPAtOnceUserSimulation extends Simulation with EnvConfigs with DataFi
       execsBuff += exec(http("send data " + x)
         .post("/")
         .body(ByteArrayBody(AbstractUbirchClient.toBytesFromHex(x))))
+        .pause(1)
     }
   }
 
@@ -45,8 +46,8 @@ class SendUPPRampUsersSimulation extends Simulation with EnvConfigs with DataFil
 
   val credentials = new UsernamePasswordCredentials(authUser, authPass)
   val auth: String = Base64.getEncoder.encodeToString((credentials.getUserName + ":" + credentials.getPassword).getBytes)
-  val numberOfUsers: Int = conf.getInt("sendUPPAtOnceUserSimulation.numberOfUsers")
-  val duringValue: Int = conf.getInt("sendUPPAtOnceUserSimulation.duringValue")
+  val numberOfUsers: Int = conf.getInt("sendUPPRampUsersSimulation.numberOfUsers")
+  val duringValue: Int = conf.getInt("sendUPPRampUsersSimulation.duringValue")
 
   val data = scala.collection.mutable.ListBuffer.empty[Map[String, String]]
 
