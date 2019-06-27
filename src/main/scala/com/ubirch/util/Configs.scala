@@ -4,7 +4,7 @@ import java.util.{ Base64, UUID }
 
 import com.ubirch.models.AbstractUbirchClient
 
-trait FileConfigs extends ConfigBase {
+trait DataFileConfigs extends ConfigBase {
   val numberOfMessagesPerFile: Int = conf.getInt("generator.numberOfMessagesPerFile")
   val maxNumberOfMessages: Int = conf.getInt("generator.maxNumberOfMessages")
   val path: String = conf.getString("generator.path")
