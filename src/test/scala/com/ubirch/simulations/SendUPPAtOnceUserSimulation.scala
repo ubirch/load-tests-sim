@@ -3,23 +3,35 @@ package com.ubirch.simulations
 import java.util.{ Base64, UUID }
 
 import com.ubirch.models.{ AbstractUbirchClient, ReadFileControl, SimpleProtocolImpl }
-import com.ubirch.util.{ EnvConfigs, DataFileConfigs }
+import com.ubirch.util.{ ConfigBase, DataFileConfigs, EnvConfigs }
 import io.gatling.core.Predef._
 import io.gatling.core.structure.ChainBuilder
 import io.gatling.http.Predef._
 import org.apache.http.auth.UsernamePasswordCredentials
+
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class SendUPPAtOnceUserSimulation extends Simulation with EnvConfigs with DataFileConfigs {
-
+trait WithCredentials extends EnvConfigs {
   val credentials = new UsernamePasswordCredentials(authUser, authPass)
   val auth: String = Base64.getEncoder.encodeToString((credentials.getUserName + ":" + credentials.getPassword).getBytes)
-  val numberOfUsers: Int = conf.getInt("sendUPPAtOnceUserSimulation.numberOfUsers")
+}
+
+trait WithProtocol extends WithCredentials {
 
   val httpProtocol = http
     .baseUrl("https://niomon." + ENV + ".ubirch.com")
     .authorizationHeader("Basic " + auth)
+
+}
+
+class SendUPPAtOnceUserSimulation
+  extends Simulation
+  with WithProtocol
+  with EnvConfigs
+  with DataFileConfigs {
+
+  val numberOfUsers: Int = conf.getInt("sendUPPAtOnceUserSimulation.numberOfUsers")
 
   val execsBuff = scala.collection.mutable.ListBuffer.empty[ChainBuilder]
 
@@ -42,12 +54,7 @@ class SendUPPAtOnceUserSimulation extends Simulation with EnvConfigs with DataFi
 
 }
 
-class SendUPPRampUsersSimulation extends Simulation with EnvConfigs with DataFileConfigs {
-
-  val credentials = new UsernamePasswordCredentials(authUser, authPass)
-  val auth: String = Base64.getEncoder.encodeToString((credentials.getUserName + ":" + credentials.getPassword).getBytes)
-  val numberOfUsers: Int = conf.getInt("sendUPPRampUsersSimulation.numberOfUsers")
-  val duringValue: Int = conf.getInt("sendUPPRampUsersSimulation.duringValue")
+object SendUPP extends DataFileConfigs {
 
   val data = scala.collection.mutable.ListBuffer.empty[Map[String, String]]
 
@@ -56,10 +63,6 @@ class SendUPPRampUsersSimulation extends Simulation with EnvConfigs with DataFil
       data += Map("UPP" -> x)
     }
   }
-
-  val httpProtocol = http
-    .baseUrl("https://niomon." + ENV + ".ubirch.com")
-    .authorizationHeader("Basic " + auth)
 
   def createBody(session: Session) = {
     val value = session("UPP").as[String]
@@ -74,11 +77,41 @@ class SendUPPRampUsersSimulation extends Simulation with EnvConfigs with DataFil
         .body(ByteArrayBody(createBody))
     )
 
+}
+
+class SendUPPRampUsersSimulation
+  extends Simulation
+  with WithProtocol
+  with ConfigBase {
+
+  import SendUPP._
+
+  val numberOfUsers: Int = conf.getInt("sendUPPRampUsersSimulation.numberOfUsers")
+  val duringValue: Int = conf.getInt("sendUPPRampUsersSimulation.duringValue")
+
   setUp(
     scn.inject(
       rampUsers(numberOfUsers)
         .during(duringValue seconds)
     )
   ).protocols(httpProtocol)
+
+}
+
+class SendUPPConstantUsersWithThrottleSimulation
+  extends Simulation
+  with WithProtocol
+  with ConfigBase {
+
+  import SendUPP._
+
+  val numberOfUsers: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.numberOfUsers")
+  val duringValue: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.duringValue")
+  val reachRpsV: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.reachRps")
+  val inV: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.in")
+
+  setUp(scn.inject(constantUsersPerSec(numberOfUsers).during(duringValue seconds)))
+    //.throttle(reachRps(reachRpsV) in (inV seconds))
+    .protocols(httpProtocol)
 
 }
