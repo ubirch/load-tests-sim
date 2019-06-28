@@ -11,7 +11,7 @@ The general workflow is:
 
 1. Create and register your device on Cumulocity.
 
-Follow the instructions here https://github.com/ubirch/ubirch-client-java and here https://github.com/ubirch/ubirch-client-java/blob/master/HOWTO.md
+Follow the instructions here <https://github.com/ubirch/ubirch-client-java> and here <https://github.com/ubirch/ubirch-client-java/blob/master/HOWTO.md>
 
 2. To generate the data -UPPS- you will use to run your simulations.
 
@@ -53,7 +53,7 @@ some old version be there.
 
 You can play with the principal values in the application.conf.
 
-An important place where to find info is, of course, https://gatling.io/docs/2.3/
+An important place where to find info is, of course, <https://gatling.io/docs/2.3/>
 
 
 
