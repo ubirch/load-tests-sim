@@ -3,6 +3,7 @@ package com.ubirch
 import java.util.{ Base64, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
+import com.ubirch.models.WriteFileControl
 import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs }
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
@@ -13,6 +14,7 @@ import org.apache.http.util.EntityUtils
 import org.json4s.DefaultFormats
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
+import scala.io.StdIn.readLine
 
 import scala.annotation.tailrec
 
@@ -109,6 +111,10 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
         val entityAsString3 = readEntity(response)
         logger.info(entityAsString3)
         if (code < 300) {
+          WriteFileControl(10000, path, directory, fileName, ext)
+            .secured { writer =>
+              writer.append(uuid.toString + ";" + entityAsString + ";" + entityAsString2 + ";" + entityAsString3)
+            }
           logger.info("Device registered")
         }
       } else {
@@ -119,17 +125,30 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
     }
   }
 
-  def main(args: Array[String]): Unit = {
+  def go(): Unit = {
+    val uuid = UUID.randomUUID()
+    logger.info("Creating device with id: " + uuid.toString)
+    logger.info("Please go to https://ubirch.cumulocity.com/apps/devicemanagement/index.html#/deviceregistration and add the device and approve it." +
+      "You can use the id that is presented above.")
 
-    val uuids = (1 to numberOfDevices).map { _ => UUID.randomUUID() }
+    logger.info(uuid.toString)
+    register(uuid)
 
-    logger.info(s"Starting process for ${uuids.size} devices")
-    uuids.foreach { x =>
-      logger.info(x.toString)
-      Thread.sleep(10000)
-      register(x)
+    def more(): Unit = {
+      val continue = readLine("Add another device? Y/n ")
+      continue.toLowerCase().trim match {
+        case "y" => go
+        case "n" =>
+        case _ => more()
+      }
     }
 
+    more()
+
+  }
+
+  def main(args: Array[String]): Unit = {
+    go()
   }
 
 }
