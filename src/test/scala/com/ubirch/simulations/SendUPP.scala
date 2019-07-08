@@ -3,7 +3,7 @@ package com.ubirch.simulations
 import java.util.Base64
 
 import com.ubirch.models.{ AbstractUbirchClient, ReadFileControl }
-import com.ubirch.util.{ DataFileConfigs, EnvConfigs }
+import com.ubirch.util.{ DataGenerationFileConfigs, EnvConfigs }
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import org.apache.http.auth.UsernamePasswordCredentials
@@ -23,7 +23,7 @@ trait WithProtocol extends WithCredentials {
 
 }
 
-object SendUPP extends DataFileConfigs {
+object SendUPP extends DataGenerationFileConfigs {
 
   val data = scala.collection.mutable.ListBuffer.empty[Map[String, String]]
 

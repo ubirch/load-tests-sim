@@ -1,7 +1,7 @@
 package com.ubirch.simulations
 
 import com.ubirch.models.{ AbstractUbirchClient, ReadFileControl }
-import com.ubirch.util.{ DataFileConfigs, EnvConfigs }
+import com.ubirch.util.{ DataGenerationFileConfigs, EnvConfigs }
 import io.gatling.core.Predef._
 import io.gatling.core.structure.ChainBuilder
 import io.gatling.http.Predef._
@@ -12,7 +12,7 @@ class SendUPPAtOnceUserSimulation
   extends Simulation
   with WithProtocol
   with EnvConfigs
-  with DataFileConfigs {
+  with DataGenerationFileConfigs {
 
   val numberOfUsers: Int = conf.getInt("sendUPPAtOnceUserSimulation.numberOfUsers")
 

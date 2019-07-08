@@ -5,9 +5,9 @@ import java.util.UUID
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.{ PrivKey, PubKey }
 import com.ubirch.models.{ PayloadGenerator, SimpleProtocolImpl, WriteFileControl }
-import com.ubirch.util.{ ConfigBase, EnvConfigs, DataFileConfigs }
+import com.ubirch.util.{ ConfigBase, EnvConfigs, DataGenerationFileConfigs }
 
-class Generator(clientUUID: UUID, clientKey: PrivKey, serverUUID: UUID, serverKey: PubKey) extends DataFileConfigs with LazyLogging {
+class Generator(clientUUID: UUID, clientKey: PrivKey, serverUUID: UUID, serverKey: PubKey) extends DataGenerationFileConfigs with LazyLogging {
 
   val protocol = new SimpleProtocolImpl(clientUUID, clientKey, serverUUID, serverKey)
   val payloadGenerator = new PayloadGenerator(clientUUID, protocol)
