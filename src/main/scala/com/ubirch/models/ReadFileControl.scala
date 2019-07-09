@@ -16,8 +16,12 @@ case class ReadFileControl(path: String, directory: String, fileName: String, ex
 
   def read[B](func: String => B) = {
     val _path = path + "/" + directory
-    val files = new File(_path).listFiles(new TestDataFile(fileName, ext)).toList
-    files.foreach { f =>
+    val files = new File(_path).listFiles(new TestDataFile(fileName, ext))
+    val filesAsList = Option(files).map(_.toList).getOrElse(Nil)
+    if (filesAsList.isEmpty) {
+      logger.info("No files to read from.")
+    }
+    filesAsList.foreach { f =>
       val re = Source.fromFile(f)
       try {
         re.getLines().foreach(func)

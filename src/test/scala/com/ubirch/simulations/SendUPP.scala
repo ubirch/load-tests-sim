@@ -11,7 +11,8 @@ import org.apache.http.auth.UsernamePasswordCredentials
 import scala.language.postfixOps
 
 trait WithCredentials extends EnvConfigs {
-  val credentials = new UsernamePasswordCredentials(authUser, authPass)
+  //TODO Configure this for every device
+  val credentials = new UsernamePasswordCredentials("aaa", "bbb")
   val auth: String = Base64.getEncoder.encodeToString((credentials.getUserName + ":" + credentials.getPassword).getBytes)
 }
 

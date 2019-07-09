@@ -19,7 +19,7 @@ class SendUPPAtOnceUserSimulation
   val execsBuff = scala.collection.mutable.ListBuffer.empty[ChainBuilder]
 
   ReadFileControl(path, directory, fileName, ext).read { l =>
-    l.split(";").toList.headOption.foreach { x =>
+    l.split(";").toList.tail.headOption.foreach { x =>
       execsBuff += exec(http("send data " + x)
         .post("/")
         .body(ByteArrayBody(AbstractUbirchClient.toBytesFromHex(x))))

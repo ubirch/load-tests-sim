@@ -137,7 +137,7 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
     def more(): Unit = {
       val continue = readLine("Add another device? Y/n ")
       continue.toLowerCase().trim match {
-        case "y" => go
+        case "y" => go()
         case "n" =>
         case _ => more()
       }
