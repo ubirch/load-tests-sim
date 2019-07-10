@@ -3,6 +3,8 @@ package com.ubirch
 import java.util.{ Base64, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
+import com.ubirch.crypto.utils.Curve
+import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey }
 import com.ubirch.models.WriteFileControl
 import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs }
 import org.apache.http.HttpResponse
@@ -14,9 +16,9 @@ import org.apache.http.util.EntityUtils
 import org.json4s.DefaultFormats
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
-import scala.io.StdIn.readLine
 
 import scala.annotation.tailrec
+import scala.io.StdIn.readLine
 
 object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with LazyLogging {
 
@@ -88,32 +90,44 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
        |}
     """.stripMargin
 
+  def createKeys = {
+    val pk = GeneratorKeyFactory.getPrivKey(Curve.Ed25519)
+    createKeysAsString(pk)
+  }
+
+  def createKeysAsString(pk: PrivKey) = {
+    val privKey = Base64.getEncoder.encodeToString(pk.getRawPrivateKey.slice(0, 32))
+    val pubKey = Base64.getEncoder.encodeToString(pk.getRawPublicKey.slice(0, 32))
+    (pubKey, privKey)
+  }
+
   @tailrec
   def register(uuid: UUID): Unit = {
     val response = client.execute(deviceCredentialsRequest(deviceCredentialsData(uuid)))
     val code = response.getStatusLine.getStatusCode
-    val entityAsString = readEntity(response)
-    logger.info(entityAsString)
+    val deviceCredentialsEntityAsString = readEntity(response)
+    logger.info(deviceCredentialsEntityAsString)
     if (code == 404) {
       Thread.sleep(5000)
       register(uuid)
     } else if (code == 201) {
-      val (u, p) = getDeviceCredentials(entityAsString)
+      val (u, p) = getDeviceCredentials(deviceCredentialsEntityAsString)
       val data = deviceInventoryData(uuid.toString)
       val response = client.execute(deviceInventoryRequest(data, u, p))
-      val entityAsString2 = readEntity(response)
+      val deviceInventoryEntityAsString = readEntity(response)
       val code = response.getStatusLine.getStatusCode
-      logger.info(entityAsString2)
+      logger.info(deviceInventoryEntityAsString)
       if (code < 300) {
-        val id = getExternalId(entityAsString2)
+        val id = getExternalId(deviceInventoryEntityAsString)
         val data = externalIdData(uuid)
         val response = client.execute(deviceExternalIdRequest(id, data, u, p))
-        val entityAsString3 = readEntity(response)
-        logger.info(entityAsString3)
+        val deviceExternalIdEntityAsString = readEntity(response)
+        logger.info(deviceExternalIdEntityAsString)
         if (code < 300) {
           WriteFileControl(10000, path, directory, fileName, ext)
             .secured { writer =>
-              writer.append(uuid.toString + ";" + entityAsString + ";" + entityAsString2 + ";" + entityAsString3)
+              val (publicKey, privateKey) = createKeys
+              writer.append(uuid.toString + ";" + deviceCredentialsEntityAsString + ";" + deviceInventoryEntityAsString + ";" + deviceExternalIdEntityAsString + ";" + publicKey + ";" + privateKey)
             }
           logger.info("Device registered")
         }

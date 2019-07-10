@@ -1,10 +1,10 @@
 package com.ubirch
 
-import java.util.UUID
+import java.util.{ Base64, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.{ PrivKey, PubKey }
-import com.ubirch.models.{ PayloadGenerator, ReadFileControl, SimpleProtocolImpl, WriteFileControl }
+import com.ubirch.models._
 import com.ubirch.util.{ ConfigBase, DataGenerationFileConfigs, DeviceGenerationFileConfigs, EnvConfigs }
 
 class DataGenerator(clientUUID: UUID, clientKey: PrivKey, serverUUID: UUID, serverKey: PubKey) extends DataGenerationFileConfigs with LazyLogging {
@@ -30,9 +30,14 @@ object DataGenerator extends ConfigBase with EnvConfigs with LazyLogging with De
     logger.info("Gen Started and Generating")
 
     ReadFileControl(path, directory, fileName, ext).read { l =>
-      l.split(";").toList.headOption.foreach { clientUUID =>
-        new DataGenerator(UUID.fromString(clientUUID), clientKey, serverUUID, serverKey)
+      l.split(";").toList match {
+        case Nil => logger.info("Nothing to do.")
+        case List(uuidAsString, _, _, _, pk, _) =>
+          val clientKeyBytes = Base64.getDecoder.decode(pk)
+          val clientKey = AbstractUbirchClient.createClientKey(clientKeyBytes)
+          new DataGenerator(UUID.fromString(uuidAsString), clientKey, serverUUID, serverKey)
       }
+
     }
 
   }

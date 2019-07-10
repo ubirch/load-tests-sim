@@ -6,8 +6,8 @@ import java.text.SimpleDateFormat
 import java.util.{ Base64, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
-import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey, PubKey }
 import com.ubirch.crypto.utils.Curve
+import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey, PubKey }
 import com.ubirch.protocol.{ Protocol, ProtocolMessage }
 import org.apache.commons.codec.binary.Hex
 import org.apache.http.HttpResponse

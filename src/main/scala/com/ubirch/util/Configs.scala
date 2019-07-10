@@ -30,8 +30,8 @@ trait EnvConfigs {
   // ===== DECODE AND SET UP KEYS =========================================================
   // Keys should be created and stored in a KeyStore for optimal security
   val serverKeyBytes = Base64.getDecoder.decode(envVars.getOrDefault("SERVER_PUBKEY", "okA7krya3TZbPNEv8SDQIGR/hOppg/mLxMh+D0vozWY="))
-  val clientKeyBytes = Base64.getDecoder.decode(envVars.get("CLIENT_KEY"))
+  //val clientKeyBytes = Base64.getDecoder.decode(envVars.get("CLIENT_KEY"))
   val serverKey = AbstractUbirchClient.createServerKey(serverKeyBytes) // server public key for verification of responses
-  val clientKey = AbstractUbirchClient.createClientKey(clientKeyBytes) // client signing key for signing messages
+  //val clientKey = AbstractUbirchClient.createClientKey(clientKeyBytes) // client signing key for signing messages
 
 }
