@@ -51,6 +51,11 @@ object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with 
     regRequest
   }
 
+  def getKey(privateKey: String) = {
+    val clientKeyBytes = Base64.getDecoder.decode(privateKey)
+    AbstractUbirchClient.createClientKey(clientKeyBytes)
+  }
+
   def main(args: Array[String]): Unit = {
 
     logger.info("Key Registration Started")
@@ -64,14 +69,11 @@ object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with 
         case List(uuidAsString, _, _, _, publicKey, privateKey) =>
           val uuid = UUID.fromString(uuidAsString)
 
-          val clientKeyBytes = Base64.getDecoder.decode(privateKey)
-          val clientKey = AbstractUbirchClient.createClientKey(clientKeyBytes)
+          val clientKey = getKey(privateKey)
           val protocol = new SimpleProtocolImpl(uuid, clientKey, serverUUID, serverKey)
 
           val info = compact(parse(pubKeyInfoData(uuid, df, publicKey)))
-
           val signature = protocol.sign(uuid, info.getBytes(StandardCharsets.UTF_8))
-
           val data = compact(parse(registrationData(info, Base64.getEncoder.encodeToString(signature))))
 
           val verification = clientKey.verify(info.getBytes, signature)

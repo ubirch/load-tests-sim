@@ -19,11 +19,19 @@ class SendUPPAtOnceUserSimulation
   val execsBuff = scala.collection.mutable.ListBuffer.empty[ChainBuilder]
 
   ReadFileControl(path, directory, fileName, ext).read { l =>
-    l.split(";").toList.tail.headOption.foreach { x =>
-      execsBuff += exec(http("send data " + x)
-        .post("/")
-        .body(ByteArrayBody(AbstractUbirchClient.toBytesFromHex(x))))
-        .pause(1)
+    l.split(";").toList match {
+      case List(uuid, deviceCredentials, upp, _) =>
+
+        val auth: String = SendUPP.encodedAuth(deviceCredentials)
+
+        execsBuff += exec(http("Send data " + uuid)
+          .post("/")
+          .header("Authorization", "Basic " + auth)
+          .body(ByteArrayBody(AbstractUbirchClient.toBytesFromHex(upp))))
+          .pause(1)
+
+      case _ => throw new Exception("No Data is malformed")
+
     }
   }
 
