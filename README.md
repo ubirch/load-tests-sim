@@ -1,19 +1,44 @@
 # load-tests-sim
 
-The purpose of this project is to create/assemble the basic tools to be able to test the Niomon-Eventlog loop
+## Purpose
+
+The purpose of this project is to create/assemble the basic tools to be able to test the Niomon-Eventlog loop.
+
+## Workflow
 
 The following image provides a suggested workflow for the load-test tools created.
 
 ![Load Test Workflow](https://raw.githubusercontent.com/ubirch/load-tests-sim/master/images/load-tests-wf.png "Load Test Workflow") 
 
+## Components
+
 The project is comprised of two kinds of groups:
 
-1. The Data Generation
-2. The Simulations
+1. Device Generator: A tool that allows to creates one or more devices. 
+
+* **com.ubirch.DeviceGenerator**
+    
+2. Key Registration: A tool that allows to register the public keys of the devices. The keys are automatically created with the device generation. 
+
+* **com.ubirch.KeyRegistration**
+
+3. The Data Generation: A tool that allows to generate the data packages for the devices that were created.
+    
+* **com.ubirch.DataGenerator** 
+
+4. The Simulations: A collection of Gatling Simulations that allow to simulate/test the sending of the data package based on different configuration values.
+
+* **SendUPPAtOnceUserSimulation**: It is a simulation that injects a fixed number of users all at once. 
+* **SendUPPConstantUsersWithThrottleSimulation**: It is a simulation that sets a constant number of users to be inserted during a fixed period of time.
+Additionally, the throughput is possible to be configured. 
+* **SendUPPRampUsersSimulation**: It is a simulation that injects a growing number of users over a period of time.
+
+
+## How to run the workflow.
 
 The general workflow is:
 
-1. Create and register your device on Cumulocity.
+1. Create and register your device(s) on Cumulocity.
 
 Follow the instructions here <https://github.com/ubirch/ubirch-client-java> and here <https://github.com/ubirch/ubirch-client-java/blob/master/HOWTO.md>
 
