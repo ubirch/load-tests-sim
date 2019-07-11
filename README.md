@@ -123,5 +123,6 @@ some old version be there.
 
 3. An important place where to find info is, of course, <https://gatling.io/docs/2.3/>
 
+4. Be aware that if data is not overwritten but appended if files already exist
 
 
