@@ -12,8 +12,6 @@ case class WriteFileControl(lines: Int, path: String, directory: String, fileNam
 
   def append(newLine: String) = {
 
-    logger.info("Appending new line to:" + fn)
-
     if (currentLines == lines) {
       close()
       currentSuffix = currentSuffix + 1
@@ -27,12 +25,13 @@ case class WriteFileControl(lines: Int, path: String, directory: String, fileNam
 
   def secured(f: WriteFileControl => Unit) = {
     try {
+      logger.debug("Appending to:" + fn)
       f(this)
     } catch {
       case e: Exception =>
         logger.error(s"Error appending to file: $fn, Error: ${e.getMessage}")
     } finally {
-      logger.info("Closing final stream")
+      logger.debug("Closing final stream")
       close()
     }
 
@@ -49,7 +48,7 @@ case class WriteFileControl(lines: Int, path: String, directory: String, fileNam
     if (directory.nonEmpty) {
       val file = new File(directory)
       if (!file.exists()) {
-        logger.info("Creating directory ...")
+        logger.debug("Creating directory ...")
         file.mkdir()
       } else {
         false
