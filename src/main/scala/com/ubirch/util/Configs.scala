@@ -2,6 +2,7 @@ package com.ubirch.util
 
 import java.util.{ Base64, UUID }
 
+import com.ubirch.crypto.PubKey
 import com.ubirch.models.AbstractUbirchClient
 
 trait DataGenerationFileConfigs extends ConfigBase {
@@ -20,15 +21,11 @@ trait DeviceGenerationFileConfigs extends ConfigBase {
   val ext: String = conf.getString("deviceGenerator.ext")
 }
 
-trait EnvConfigs {
+trait EnvConfigs extends ConfigBase {
 
-  val envVars = System.getenv()
-  val ENV: String = envVars.getOrDefault("UBIRCH_ENV", "dev")
-  val serverUUID = UUID.fromString(envVars.getOrDefault("SERVER_UUID", "9d3c78ff-22f3-4441-a5d1-85c636d486ff"))
-
-  // ===== DECODE AND SET UP KEYS =========================================================
-  // Keys should be created and stored in a KeyStore for optimal security
-  val serverKeyBytes = Base64.getDecoder.decode(envVars.getOrDefault("SERVER_PUBKEY", "okA7krya3TZbPNEv8SDQIGR/hOppg/mLxMh+D0vozWY="))
-  val serverKey = AbstractUbirchClient.createServerKey(serverKeyBytes) // server public key for verification of responses
+  val ENV: String = conf.getString("environment")
+  val serverUUID: UUID = UUID.fromString(conf.getString("server_uuid"))
+  val serverKeyBytes: Array[Byte] = Base64.getDecoder.decode(conf.getString("server_pubkey"))
+  val serverKey: PubKey = AbstractUbirchClient.createServerKey(serverKeyBytes)
 
 }

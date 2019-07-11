@@ -36,19 +36,60 @@ Additionally, the throughput is possible to be configured.
 
 ## How to run the workflow.
 
-The general workflow is:
+0. It is important that you select the proper values for your tools:
 
-1. Create and register your device(s) on Cumulocity.
+You can do this by looking at: *src/main/resources/application.base.conf*
 
-Follow the instructions here <https://github.com/ubirch/ubirch-client-java> and here <https://github.com/ubirch/ubirch-client-java/blob/master/HOWTO.md>
+1. Compile and package the project.
 
-2. To generate the data -UPPS- you will use to run your simulations.
+First of all, compile the project, by running the following command.
 
-The tool that is in charge of this is:
+```shell
+mvn clean compile test-compile
+```
 
-*com.ubirch.Generator*
+This command will clean all possible existing compiled  resources and compile both normal classes and tests -simulations-.
 
-3. At the time of this writing, there are three simulations:
+The previous command helps in making sure the system compiles, now we need to package it:
+
+```shell
+mvn package
+```
+
+If all goes well, we should be able to start our tools.
+
+2. Create and register your device(s) on Cumulocity.
+
+    2.1 You need to be logged in on <https://ubirch.cumulocity.com/>. Once logged in, you should visit 
+     <https://ubirch.cumulocity.com/apps/devicemanagement/index.html#/deviceregistration>
+     
+    2.2 Run "com.ubirch.DeviceGenerator" by running the following command:
+    
+    ```shell
+        java -cp target/ubirch-load-test-1.0.0.jar com.ubirch.DeviceGenerator 
+    ```
+    
+    This will start a process to guide you through the device registration on Cumulocity.
+    
+3. Register the public keys for your brand-new devices. To do so, run the following command:
+
+    ```shell
+        java -cp target/ubirch-load-test-1.0.0.jar com.ubirch.KeyRegistration 
+    ```
+    
+    If the registration for a particular key succeeds, you should see a log statement like this:
+    
+    "Status Response: 200"
+
+3. To generate the data -UPPS- you will use to run your simulations. To run this generation, run the following command:
+
+    ```shell
+        java -cp target/ubirch-load-test-1.0.0.jar com.ubirch.DataGenerator 
+    ```
+
+4. Run your simulations 
+
+At the time of this writing, there are three simulations:
 
 * **SendUPPAtOnceUserSimulation**: It is a simulation that injects a fixed number of users all at once. 
 * **SendUPPConstantUsersWithThrottleSimulation**: It is a simulation that sets a constant number of users to be inserted during a fixed period of time.
@@ -62,27 +103,25 @@ I would recommend that latter as you are able to observe a little better the res
 To run all commands:
 
 ```shell
-
 mvn gatling:test
-
 ```
 
 To run a specific simulation, run the following command:
 
 ```shell
-
 mvn gatling:test -Dgatling.simulationClass=com.ubirch.simulations.SendUPPConstantUsersWithThrottleSimulation
-
 ```
 
 At the end of each simulation there's a url you can use to open a report on your browser.
 
-*Notes*: It is recommended that if you modify your simulations, you also run mvn clean compile, as it is sometime possible that 
+## Notes
+
+1. It is recommended that if you modify your simulations, you also run mvn clean compile, as it is sometime possible that 
 some old version be there. 
 
-You can play with the principal values in the application.conf.
+2. You can play with the principal values in the application.conf.
 
-An important place where to find info is, of course, <https://gatling.io/docs/2.3/>
+3. An important place where to find info is, of course, <https://gatling.io/docs/2.3/>
 
 
 

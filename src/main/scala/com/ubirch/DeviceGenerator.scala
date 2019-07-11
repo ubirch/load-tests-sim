@@ -142,10 +142,8 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
   def go(): Unit = {
     val uuid = UUID.randomUUID()
     logger.info("Creating device with id: " + uuid.toString)
-    logger.info("Please go to https://ubirch.cumulocity.com/apps/devicemanagement/index.html#/deviceregistration and add the device and approve it." +
-      "You can use the id that is presented above.")
-
-    logger.info(uuid.toString)
+    logger.info("Please go to https://ubirch.cumulocity.com/apps/devicemanagement/index.html#/deviceregistration and add the device and approve it. You can use the id that is presented above.")
+    logger.info("Copy this UUID " + uuid.toString + " and add it to Cumulocity and then come back here. ")
     register(uuid)
 
     def more(): Unit = {
