@@ -4,7 +4,7 @@ The purpose of this project is to create/assemble the basic tools to be able to 
 
 The following image provides a suggested workflow for the load-test tools created.
 
-![Event Log Components](https://raw.githubusercontent.com/ubirch/ubirch-event-log/master/.images/FastChainer-Eventlog-Overview.png "Event Log System") 
+![Load Test Workflow](https://raw.githubusercontent.com/ubirch/load-tests-sim/master/images/load-tests-wf.png "Load Test Workflow") 
 
 The project is comprised of two kinds of groups:
 
