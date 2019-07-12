@@ -8,7 +8,7 @@ import io.gatling.http.Predef._
 
 import scala.language.postfixOps
 
-class SendUPPAtOnceUserSimulation
+class SendUPPAtOnceUserSimulation2
   extends Simulation
   with WithProtocol
   with EnvConfigs
@@ -45,7 +45,7 @@ class SendUPPAtOnceUserSimulation
 
 }
 
-class SendUPPAtOnceUserSimulation2
+class SendUPPAtOnceUserSimulation
   extends Simulation
   with WithProtocol
   with ConfigBase {
