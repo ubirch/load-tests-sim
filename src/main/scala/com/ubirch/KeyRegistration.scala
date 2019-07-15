@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.{ Base64, TimeZone, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
-import com.ubirch.models.{ AbstractUbirchClient, ReadFileControl, SimpleProtocolImpl }
+import com.ubirch.models.{ AbstractUbirchClient, DeviceGeneration, ReadFileControl, SimpleProtocolImpl }
 import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats }
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
@@ -61,28 +61,25 @@ object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with 
     df.setTimeZone(TimeZone.getTimeZone("UTC"))
 
     ReadFileControl(path, directory, fileName, ext).read { l =>
-      l.split(";").toList match {
-        case Nil => logger.info("Nothing to do")
-        case List(uuidAsString, _, _, _, publicKey, privateKey) =>
-          val uuid = UUID.fromString(uuidAsString)
 
-          val clientKey = getKey(privateKey)
-          val protocol = new SimpleProtocolImpl(uuid, clientKey, serverUUID, serverKey)
+      val dataGeneration = parse(l).extractOpt[DeviceGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
 
-          val info = compact(parse(pubKeyInfoData(uuid, df, publicKey)))
-          val signature = protocol.sign(uuid, info.getBytes(StandardCharsets.UTF_8))
-          val data = compact(parse(registrationData(info, Base64.getEncoder.encodeToString(signature))))
+      val clientKey = getKey(dataGeneration.privateKey)
+      val protocol = new SimpleProtocolImpl(dataGeneration.UUID, clientKey, serverUUID, serverKey)
 
-          val verification = clientKey.verify(info.getBytes, signature)
-          val resp = client.execute(registerKeyRequest(data))
-          val body = DeviceGenerator.readEntity(resp)
+      val info = compact(parse(pubKeyInfoData(dataGeneration.UUID, df, dataGeneration.publicKey)))
+      val signature = protocol.sign(dataGeneration.UUID, info.getBytes(StandardCharsets.UTF_8))
+      val data = compact(parse(registrationData(info, Base64.getEncoder.encodeToString(signature))))
 
-          logger.info("Info: " + info)
-          logger.info("Data: " + data)
-          logger.info("Verification: " + verification.toString)
-          logger.info("Response: " + body)
-          logger.info("Status Response: " + resp.getStatusLine.getStatusCode.toString)
-      }
+      val verification = clientKey.verify(info.getBytes, signature)
+      val resp = client.execute(registerKeyRequest(data))
+      val body = DeviceGenerator.readEntity(resp)
+
+      logger.info("Info: " + info)
+      logger.info("Data: " + data)
+      logger.info("Verification: " + verification.toString)
+      logger.info("Response: " + body)
+      logger.info("Status Response: " + resp.getStatusLine.getStatusCode.toString)
 
     }
 
