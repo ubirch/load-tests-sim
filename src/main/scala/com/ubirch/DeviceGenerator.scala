@@ -129,7 +129,7 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
           WriteFileControl(10000, path, directory, fileName, ext)
             .secured { writer =>
               val (publicKey, privateKey) = createKeys
-              val data = DeviceGeneration(
+              val deviceGeneration = DeviceGeneration(
                 UUID = uuid,
                 deviceCredentials = parse(deviceCredentialsEntityAsString),
                 deviceInventory = parse(deviceInventoryEntityAsString),
@@ -137,8 +137,15 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
                 publicKey = publicKey,
                 privateKey = privateKey
               )
+
+              if (runKeyRegistration) {
+                val (info, data, verification, resp, body) = KeyRegistration.register(deviceGeneration)
+                KeyRegistration.logOutput(info, data, verification, resp, body)
+              }
+
               val dataToStore = compact(Extraction.decompose(data))
               writer.append(dataToStore)
+
             }
           logger.info("Device registered")
         }
@@ -171,6 +178,7 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
   }
 
   def main(args: Array[String]): Unit = {
+    logger.info("Automatic Key Registration is: " + (if (runKeyRegistration) "ON" else "OFF"))
     go()
   }
 
