@@ -143,7 +143,7 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
                 KeyRegistration.logOutput(info, data, verification, resp, body)
               }
 
-              val dataToStore = compact(Extraction.decompose(data))
+              val dataToStore = compact(Extraction.decompose(deviceGeneration))
               writer.append(dataToStore)
 
             }

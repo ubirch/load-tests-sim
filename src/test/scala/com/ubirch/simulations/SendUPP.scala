@@ -24,6 +24,8 @@ object SendUPP extends DataGenerationFileConfigs with WithJsonFormats {
       data += Map("UPP" -> dataGeneration.upp, "auth" -> auth)
 
     }
+
+    if (data.isEmpty) throw new Exception("No Data Found. Please generate the needed data.")
   }
 
   def createBody(session: Session) = {
