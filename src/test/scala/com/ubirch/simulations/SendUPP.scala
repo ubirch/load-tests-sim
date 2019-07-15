@@ -57,7 +57,7 @@ object SendUPP extends DataGenerationFileConfigs {
       .body(ByteArrayBody(createBody))
   }
 
-  val scn = scenario("SendUPPSimulation")
+  val scn = scenario("Device Message (UPP)")
     .feed(data.toIndexedSeq.queue)
     .exec(send)
 
