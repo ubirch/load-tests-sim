@@ -1,19 +1,19 @@
 package com.ubirch
 
-import java.util.{ Base64, UUID }
+import java.util.{Base64, UUID}
 
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.utils.Curve
-import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey }
-import com.ubirch.models.WriteFileControl
-import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs }
+import com.ubirch.crypto.{GeneratorKeyFactory, PrivKey}
+import com.ubirch.models.{DeviceGeneration, WriteFileControl}
+import com.ubirch.util.{ConfigBase, DeviceGenerationFileConfigs}
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.json4s.DefaultFormats
+import org.json4s.{DefaultFormats, Extraction}
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
@@ -67,6 +67,10 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
 
   def readEntity(response: HttpResponse) = {
     EntityUtils.toString(response.getEntity)
+  }
+
+  def readEntityAsJValue(response: HttpResponse) = {
+    parse(readEntity(response))
   }
 
   def externalIdData(uuid: UUID) = {
@@ -127,7 +131,16 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
           WriteFileControl(10000, path, directory, fileName, ext)
             .secured { writer =>
               val (publicKey, privateKey) = createKeys
-              writer.append(uuid.toString + ";" + deviceCredentialsEntityAsString + ";" + deviceInventoryEntityAsString + ";" + deviceExternalIdEntityAsString + ";" + publicKey + ";" + privateKey)
+              val data = DeviceGeneration(
+                UUID = uuid,
+                deviceCredentials = parse(deviceCredentialsEntityAsString),
+                deviceInventory = parse(deviceInventoryEntityAsString),
+                deviceExternalId = parse(deviceExternalIdEntityAsString),
+                publicKey = publicKey,
+                privateKey = privateKey
+              )
+              val dataToStore = compact(Extraction.decompose(data))
+              writer.append(dataToStore)
             }
           logger.info("Device registered")
         }
