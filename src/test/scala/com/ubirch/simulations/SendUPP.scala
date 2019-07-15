@@ -1,13 +1,10 @@
 package com.ubirch.simulations
 
-import java.util.Base64
-
-import com.ubirch.DeviceGenerator
-import com.ubirch.models.{ AbstractUbirchClient, ReadFileControl }
-import com.ubirch.util.{ DataGenerationFileConfigs, EnvConfigs }
+import com.ubirch.models.{ AbstractUbirchClient, DataGeneration, ReadFileControl }
+import com.ubirch.util.{ DataGenerationFileConfigs, EnvConfigs, Helpers, WithJsonFormats }
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import org.apache.http.auth.UsernamePasswordCredentials
+import org.json4s.jackson.JsonMethods._
 
 import scala.language.postfixOps
 
@@ -15,20 +12,16 @@ trait WithProtocol extends EnvConfigs {
   val httpProtocol = http.baseUrl("https://niomon." + ENV + ".ubirch.com")
 }
 
-object SendUPP extends DataGenerationFileConfigs {
+object SendUPP extends DataGenerationFileConfigs with WithJsonFormats {
 
   val data = scala.collection.mutable.ListBuffer.empty[Map[String, String]]
 
   val loadData = {
     ReadFileControl(path, directory, fileName, ext).read { l =>
 
-      l.split(";").toList match {
-        case List(_, deviceCredentials, upp, hash) =>
-          val auth: String = SendUPP.encodedAuth(deviceCredentials)
-          data += Map("UPP" -> upp, "auth" -> auth)
-
-        case Nil => throw new Exception("Data is malformed")
-      }
+      val dataGeneration = parse(l).extractOpt[DataGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
+      val auth: String = Helpers.encodedAuth(dataGeneration.deviceCredentials)
+      data += Map("UPP" -> dataGeneration.upp, "auth" -> auth)
 
     }
   }
@@ -36,13 +29,6 @@ object SendUPP extends DataGenerationFileConfigs {
   def createBody(session: Session) = {
     val value = session("UPP").as[String]
     AbstractUbirchClient.toBytesFromHex(value)
-  }
-
-  def encodedAuth(deviceCredentials: String) = {
-    val (username, password) = DeviceGenerator.getDeviceCredentials(deviceCredentials)
-    val credentials = new UsernamePasswordCredentials(username, password)
-    val auth: String = Base64.getEncoder.encodeToString((credentials.getUserName + ":" + credentials.getPassword).getBytes)
-    auth
   }
 
   def authHeader(session: Session) = {

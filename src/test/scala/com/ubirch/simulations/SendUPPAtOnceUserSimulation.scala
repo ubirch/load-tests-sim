@@ -1,10 +1,11 @@
 package com.ubirch.simulations
 
-import com.ubirch.models.{ AbstractUbirchClient, ReadFileControl }
-import com.ubirch.util.{ ConfigBase, DataGenerationFileConfigs, EnvConfigs }
+import com.ubirch.models.{ AbstractUbirchClient, DataGeneration, ReadFileControl }
+import com.ubirch.util._
 import io.gatling.core.Predef._
 import io.gatling.core.structure.ChainBuilder
 import io.gatling.http.Predef._
+import org.json4s.jackson.JsonMethods._
 
 import scala.language.postfixOps
 
@@ -12,27 +13,24 @@ class SendUPPAtOnceUserSimulation2
   extends Simulation
   with WithProtocol
   with EnvConfigs
-  with DataGenerationFileConfigs {
+  with DataGenerationFileConfigs
+  with WithJsonFormats {
 
   val numberOfUsers: Int = conf.getInt("sendUPPAtOnceUserSimulation.numberOfUsers")
 
   val execsBuff = scala.collection.mutable.ListBuffer.empty[ChainBuilder]
 
   ReadFileControl(path, directory, fileName, ext).read { l =>
-    l.split(";").toList match {
-      case List(uuid, deviceCredentials, upp, _) =>
 
-        val auth: String = SendUPP.encodedAuth(deviceCredentials)
+    val dataGeneration = parse(l).extractOpt[DataGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
+    val auth: String = Helpers.encodedAuth(dataGeneration.deviceCredentials)
 
-        execsBuff += exec(http("Send data " + uuid)
-          .post("/")
-          .header("Authorization", "Basic " + auth)
-          .body(ByteArrayBody(AbstractUbirchClient.toBytesFromHex(upp))))
-          .pause(1)
+    execsBuff += exec(http("Send data " + dataGeneration.UUID)
+      .post("/")
+      .header("Authorization", "Basic " + auth)
+      .body(ByteArrayBody(AbstractUbirchClient.toBytesFromHex(dataGeneration.upp))))
+      .pause(1)
 
-      case _ => throw new Exception("No Data is malformed")
-
-    }
   }
 
   val scn = scenario("SendUPPSimulation").exec(execsBuff)
