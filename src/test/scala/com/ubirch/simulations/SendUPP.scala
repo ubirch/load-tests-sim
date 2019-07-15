@@ -1,5 +1,6 @@
 package com.ubirch.simulations
 
+import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.models.{ AbstractUbirchClient, DataGeneration, ReadFileControl }
 import com.ubirch.util.{ DataGenerationFileConfigs, EnvConfigs, Helpers, WithJsonFormats }
 import io.gatling.core.Predef._
@@ -12,12 +13,14 @@ trait WithProtocol extends EnvConfigs {
   val httpProtocol = http.baseUrl("https://niomon." + ENV + ".ubirch.com")
 }
 
-object SendUPP extends DataGenerationFileConfigs with WithJsonFormats {
+object SendUPP extends DataGenerationFileConfigs with WithJsonFormats with LazyLogging {
+
+  val dataReadType: String = conf.getString("dataReadType")
 
   val data = scala.collection.mutable.ListBuffer.empty[Map[String, String]]
 
-  val loadData = {
-    ReadFileControl(path, directory, fileName, ext).read { l =>
+  def loadData(suffixes: List[String]) = {
+    ReadFileControl(path, directory, fileName, suffixes, ext).read { l =>
 
       val dataGeneration = parse(l).extractOpt[DataGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
       val auth: String = Helpers.encodedAuth(dataGeneration.deviceCredentials)
@@ -25,7 +28,11 @@ object SendUPP extends DataGenerationFileConfigs with WithJsonFormats {
 
     }
 
+    println("Data total: " + data.size)
+    logger.info("Data total: " + data.size)
     if (data.isEmpty) throw new Exception("No Data Found. Please generate the needed data.")
+
+    data
   }
 
   def createBody(session: Session) = {
@@ -45,8 +52,19 @@ object SendUPP extends DataGenerationFileConfigs with WithJsonFormats {
       .body(ByteArrayBody(createBody))
   }
 
-  val scn = scenario("Device Message (UPP)")
-    .feed(data.toIndexedSeq.queue)
+  def prepareData(suffixes: List[String]) = {
+    val data = loadData(suffixes).toIndexedSeq
+    dataReadType match {
+      case "queue" => data.queue
+      case "random" => data.random
+      case "shuffle" => data.shuffle
+      case _ => data.queue
+    }
+
+  }
+
+  def scn(suffixes: List[String]) = scenario("Device Message (UPP)")
+    .feed(prepareData(suffixes))
     .exec(send)
 
 }

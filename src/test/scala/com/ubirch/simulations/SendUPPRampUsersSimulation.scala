@@ -15,9 +15,10 @@ class SendUPPRampUsersSimulation
 
   val numberOfUsers: Int = conf.getInt("sendUPPRampUsersSimulation.numberOfUsers")
   val duringValue: Int = conf.getInt("sendUPPRampUsersSimulation.duringValue")
+  val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
   setUp(
-    scn.inject(
+    scn(devices).inject(
       rampUsers(numberOfUsers)
         .during(duringValue seconds)
     )

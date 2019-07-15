@@ -126,7 +126,7 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
         val deviceExternalIdEntityAsString = readEntity(response)
         logger.info(deviceExternalIdEntityAsString)
         if (code < 300) {
-          WriteFileControl(10000, path, directory, fileName, ext)
+          WriteFileControl(10000, path, directory, fileName, "", ext)
             .secured { writer =>
               val (publicKey, privateKey) = createKeys
               val deviceGeneration = DeviceGeneration(

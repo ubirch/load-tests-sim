@@ -17,8 +17,9 @@ class SendUPPConstantUsersWithThrottleSimulation
   val duringValue: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.duringValue")
   val reachRpsV: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.reachRps")
   val inV: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.in")
+  val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
-  setUp(scn.inject(constantUsersPerSec(numberOfUsers).during(duringValue seconds)))
+  setUp(scn(devices).inject(constantUsersPerSec(numberOfUsers).during(duringValue seconds)))
     .throttle(reachRps(reachRpsV) in (inV seconds))
     .protocols(httpProtocol)
 

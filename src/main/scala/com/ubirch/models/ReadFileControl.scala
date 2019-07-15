@@ -6,17 +6,27 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.io.Source
 
-class TestDataFile(fileName: String, ext: String) extends FilenameFilter {
+class TestDataFileFilter(fileName: String, suffixes: List[String], ext: String) extends FilenameFilter {
   override def accept(file: File, name: String): Boolean = {
-    name.startsWith(fileName) && name.endsWith(ext)
+    val basic = name.startsWith(fileName) && name.endsWith(ext)
+    val extra = if (suffixes.nonEmpty) {
+      suffixes
+        .map(s => s + "." + ext)
+        .map(s => name.contains(s))
+        .exists(x => x)
+    } else {
+      true
+    }
+
+    basic && extra
   }
 }
 
-case class ReadFileControl(path: String, directory: String, fileName: String, ext: String) extends LazyLogging {
+case class ReadFileControl(path: String, directory: String, fileName: String, suffixes: List[String], ext: String) extends LazyLogging {
 
   def read[B](func: String => B) = {
     val _path = path + "/" + directory
-    val files = new File(_path).listFiles(new TestDataFile(fileName, ext))
+    val files = new File(_path).listFiles(new TestDataFileFilter(fileName, suffixes, ext))
     val filesAsList = Option(files).map(_.toList).getOrElse(Nil)
     if (filesAsList.isEmpty) {
       logger.info("No files to read from.")

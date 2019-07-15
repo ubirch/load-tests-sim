@@ -4,7 +4,7 @@ import java.io.{ BufferedWriter, File, FileWriter }
 
 import com.typesafe.scalalogging.LazyLogging
 
-case class WriteFileControl(lines: Int, path: String, directory: String, fileName: String, ext: String) extends LazyLogging {
+case class WriteFileControl(lines: Int, path: String, directory: String, fileName: String, prefix: String, ext: String) extends LazyLogging {
 
   private var currentSuffix = 0
   private var currentLines = 0
@@ -41,7 +41,8 @@ case class WriteFileControl(lines: Int, path: String, directory: String, fileNam
     val p = if (path.isEmpty) path else path + "/"
     val d = if (directory.isEmpty) directory else directory + "/"
     ensureDirectory(p + d)
-    p + d + fileName + "_" + currentSuffix + "." + ext
+    val suffix = currentSuffix.toString + (if (prefix.nonEmpty) "_" + prefix else "")
+    p + d + fileName + "_" + suffix + "." + ext
   }
 
   def ensureDirectory(directory: String) = {

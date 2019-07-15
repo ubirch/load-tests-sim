@@ -31,7 +31,7 @@ class DataGenerator(total: Total, deviceGeneration: DeviceGeneration, clientKey:
 
       logger.info("Device " + deviceGeneration.UUID + " | " + maxNumberOfMessages + " max messages | " + ftc + " file(s) will be created/modified")
 
-      WriteFileControl(numberOfMessagesPerFile, path, directory, fileName, ext)
+      WriteFileControl(numberOfMessagesPerFile, path, directory, fileName, deviceGeneration.UUID.toString, ext)
         .secured { writer =>
           Iterator
             .continually(payloadGenerator.getOneAsString)
@@ -56,7 +56,7 @@ object DataGenerator extends ConfigBase with EnvConfigs with DeviceGenerationFil
 
     val total = new Total
 
-    ReadFileControl(path, directory, fileName, ext).read { l =>
+    ReadFileControl(path, directory, fileName, Nil, ext).read { l =>
 
       val dataGeneration = parse(l).extractOpt[DeviceGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
       val clientKey = getKey(dataGeneration.privateKey)
