@@ -6,17 +6,14 @@ import java.util.{ Base64, TimeZone, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.models.{ AbstractUbirchClient, ReadFileControl, SimpleProtocolImpl }
-import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs }
+import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats }
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
-import org.json4s.DefaultFormats
 import org.json4s.jackson.JsonMethods._
 
-object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with EnvConfigs with LazyLogging {
-
-  implicit val formats = DefaultFormats
+object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with EnvConfigs with WithJsonFormats with LazyLogging {
 
   val client: HttpClient = HttpClients.createMinimal()
 

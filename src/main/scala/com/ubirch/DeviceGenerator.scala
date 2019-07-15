@@ -1,28 +1,26 @@
 package com.ubirch
 
-import java.util.{Base64, UUID}
+import java.util.{ Base64, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.utils.Curve
-import com.ubirch.crypto.{GeneratorKeyFactory, PrivKey}
-import com.ubirch.models.{DeviceGeneration, WriteFileControl}
-import com.ubirch.util.{ConfigBase, DeviceGenerationFileConfigs}
+import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey }
+import com.ubirch.models.{ DeviceGeneration, WriteFileControl }
+import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, WithJsonFormats }
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.json4s.{DefaultFormats, Extraction}
+import org.json4s.Extraction
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
 import scala.annotation.tailrec
 import scala.io.StdIn.readLine
 
-object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with LazyLogging {
-
-  implicit val formats = DefaultFormats
+object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with WithJsonFormats with LazyLogging {
 
   def encode(data: String) = Base64.getEncoder.encodeToString(data.getBytes)
 

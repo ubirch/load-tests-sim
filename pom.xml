@@ -121,6 +121,13 @@
             <artifactId>json4s-jackson_${scala.major.version}</artifactId>
             <version>3.6.5</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-ext_${scala.compat.version}</artifactId>
+            <version>3.6.0</version>
+        </dependency>
+
         <dependency>
             <groupId>io.gatling.highcharts</groupId>
             <artifactId>gatling-charts-highcharts</artifactId>
