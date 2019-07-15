@@ -71,6 +71,9 @@ If all goes well, we should be able to start our tools.
     
     This will start a process to guide you through the device registration on Cumulocity.
     
+    **Note**: There is a config key *deviceGenerator.runKeyRegistration* that allows you to run the key registration step when creating the devices themselves.
+    This is very useful for when you just want to register the keys for you device as part of the same device generation process.
+    
 3. Register the public keys for your brand-new devices. To do so, run the following command:
 
     ```shell
