@@ -15,6 +15,7 @@ trait DataGenerationFileConfigs extends ConfigBase {
 }
 
 trait DeviceGenerationFileConfigs extends ConfigBase {
+  val deviceBootstrap: String = conf.getString("devicebootstrap")
   val path: String = conf.getString("deviceGenerator.path")
   val directory: String = conf.getString("deviceGenerator.directory")
   val fileName: String = conf.getString("deviceGenerator.fileName")

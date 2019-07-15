@@ -26,7 +26,7 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
 
   def encode(data: String) = Base64.getEncoder.encodeToString(data.getBytes)
 
-  val auth = encode("devicebootstrap:" + "Fhdt1bb1f")
+  val auth = encode("devicebootstrap:" + deviceBootstrap)
 
   val client: HttpClient = HttpClients.createMinimal()
 
