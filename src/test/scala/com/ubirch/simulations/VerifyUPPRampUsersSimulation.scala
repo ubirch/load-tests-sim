@@ -6,21 +6,21 @@ import io.gatling.core.Predef._
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class SendUPPRampUsersSimulation
+class VerifyUPPRampUsersSimulation
   extends Simulation
-  with SendUPP
+  with VerifyUPP
   with Protocols
   with ConfigBase {
 
-  val numberOfUsers: Int = conf.getInt("sendUPPRampUsersSimulation.numberOfUsers")
-  val duringValue: Int = conf.getInt("sendUPPRampUsersSimulation.duringValue")
+  val numberOfUsers: Int = conf.getInt("verifyUPPRampUsersSimulation.numberOfUsers")
+  val duringValue: Int = conf.getInt("verifyUPPRampUsersSimulation.duringValue")
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
   setUp(
-    sendScenario(devices).inject(
+    verifyScenario(devices).inject(
       rampUsers(numberOfUsers)
         .during(duringValue seconds)
     )
-  ).protocols(niomonProtocol)
+  ).protocols(verificationProtocol)
 
 }
