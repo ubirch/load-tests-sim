@@ -18,8 +18,13 @@ class SendUPPConstantUsersWithThrottleSimulation
   val inV: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.in")
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
-  setUp(sendScenario(devices).inject(constantUsersPerSec(numberOfUsers).during(duringValue seconds)))
-    .throttle(reachRps(reachRpsV) in (inV seconds))
+  setUp(
+    sendScenario(devices)
+      .inject(
+        constantConcurrentUsers(numberOfUsers)
+          .during(duringValue seconds)
+      )
+  ).throttle(reachRps(reachRpsV) in (inV seconds))
     .protocols(niomonProtocol)
 
 }
