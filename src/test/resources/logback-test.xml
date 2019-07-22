@@ -31,7 +31,7 @@
         </encoder>
     </appender>
 
-    <logger name="io.gatling.http.engine.response" level="INFO" />
+    <logger name="io.gatling.http.engine.response" level="TRACE" />
 
     <root level="INFO">
         <appender-ref ref="STDERR"/>

@@ -40,6 +40,8 @@ Additionally, the throughput is possible to be configured.
 
 You can do this by looking at: *src/main/resources/application.base.conf*
 
+It is also important that the anchoring systems have sufficient funds, so that a valid verification can be performed. 
+
 1. Compile and package the project.
 
 First of all, compile the project, by running the following command.
@@ -98,7 +100,8 @@ At the time of this writing, there are three simulations:
 * **SendUPPConstantUsersWithThrottleSimulation**: It is a simulation that sets a constant number of users to be inserted during a fixed period of time.
 Additionally, the throughput is possible to be configured. 
 * **SendUPPRampUsersSimulation**: It is a simulation that injects a growing number of users over a period of time.
-
+* **VerifyUPPAtOnceUserSimulation**: It is a simulation that verifies the data that was sent injecting a fixed number of users all at once.  
+* **VerifyUPPRampUsersSimulation**: It is a simulation that verifies the data that was sent injecting a growing number of users over a period of time.
 
 In order to star the simulations, you have two options, you either run all the simulations or you select which one you would like to start first.
 I would recommend that latter as you are able to observe a little better the results of the simulations.
@@ -127,5 +130,9 @@ some old version be there.
 3. An important place where to find info is, of course, <https://gatling.io/docs/2.3/>
 
 4. Be aware that if data is not overwritten but appended if files already exist
+
+5. Note that if you sent data in a random/shuffled way, it is likely that the verification will fail, it is recommended in this case to either: 
+Shuffle/randomize the data files but having them previously stored or keep "queue" as sending ordering.
+
 
 
