@@ -32,6 +32,7 @@ The project is comprised of two kinds of groups:
 * **SendUPPConstantUsersWithThrottleSimulation**: It is a simulation that sets a constant number of users to be inserted during a fixed period of time.
 Additionally, the throughput is possible to be configured. 
 * **SendUPPRampUsersSimulation**: It is a simulation that injects a growing number of users over a period of time.
+* **SendUPPAproxRateSecondsSimulation**: It is a simulation that simulates a number of requests per second over a fixed duration.
 * **VerifyUPPAtOnceUserSimulation**: It is a simulation that verifies the data that was sent injecting a fixed number of users all at once.  
 * **VerifyUPPRampUsersSimulation**: It is a simulation that verifies the data that was sent injecting a growing number of users over a period of time.
 
@@ -102,6 +103,7 @@ At the time of this writing, there are three simulations:
 * **SendUPPConstantUsersWithThrottleSimulation**: It is a simulation that sets a constant number of users to be inserted during a fixed period of time.
 Additionally, the throughput is possible to be configured. 
 * **SendUPPRampUsersSimulation**: It is a simulation that injects a growing number of users over a period of time.
+* **SendUPPAproxRateSecondsSimulation**: It is a simulation that simulates a number of requests per second over a fixed duration.
 * **VerifyUPPAtOnceUserSimulation**: It is a simulation that verifies the data that was sent injecting a fixed number of users all at once.  
 * **VerifyUPPRampUsersSimulation**: It is a simulation that verifies the data that was sent injecting a growing number of users over a period of time.
 
