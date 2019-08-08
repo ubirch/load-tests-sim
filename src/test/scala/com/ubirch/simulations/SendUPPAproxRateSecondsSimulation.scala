@@ -12,8 +12,6 @@ class SendUPPAproxRateSecondsSimulation
     with Protocols
     with ConfigBase {
 
-  val constantUsers: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.constantusers")
-
   val rps1: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.rps1")
   val rampup1: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.rampup1")
   val holdfor1: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.holdfor1")
@@ -23,6 +21,8 @@ class SendUPPAproxRateSecondsSimulation
   val holdfor2: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.holdfor2")
 
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
+
+  val constantUsers: Int = math.max(rps1, rps2)
   val during: Int = rampup1 + holdfor1 + rampup2 + holdfor2
 
   // TODO make configurable
