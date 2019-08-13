@@ -12,27 +12,34 @@ class SendUPPAproxRateSecondsSimulation
     with Protocols
     with ConfigBase {
 
-  val rps1: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.rps1")
-  val rampup1: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.rampup1")
-  val holdfor1: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.holdfor1")
+  val stepConfs = conf.getConfigList("sendUPPAproxRateSecondsSimulation.steps")
+  val stepCount = stepConfs.size()
 
-  val rps2: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.rps2")
-  val rampup2: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.rampup2")
-  val holdfor2: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.holdfor2")
+  val steps = (0 until stepCount).toList.map { i =>
+    List(
+      stepConfs.get(i).getInt("rps"),
+      stepConfs.get(i).getInt("rampup"),
+      stepConfs.get(i).getInt("holdfor")
+    )
+  }
 
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
-  val constantUsers: Int = math.max(rps1, rps2)
-  val during: Int = rampup1 + holdfor1 + rampup2 + holdfor2
+  val constantUsers: Int = (0 until stepCount).toList.map(i => steps(i).head).max
+  val during: Int = (0 until stepCount).toList.flatMap(i => List(steps(i)(1), steps(i)(2))).sum
+
 
   // TODO make configurable
   setUp(sendScenario(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
     .throttle(
-      reachRps(rps1) in (rampup1 minute),
-      holdFor(holdfor1 minute),
-      reachRps(rps2) in (rampup2 minute),
-      holdFor(holdfor2 minutes)
-    ).protocols(niomonProtocol)
+      (0 until stepCount).toList.flatMap { i =>
+        List(
+          reachRps(steps(i)(0)) in (steps(i)(1) minute),
+          holdFor(steps(i)(2) minute)
+        )
+      }
+    )
+    .protocols(niomonProtocol)
 
 }
 
