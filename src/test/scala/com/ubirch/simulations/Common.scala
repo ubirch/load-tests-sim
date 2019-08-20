@@ -42,7 +42,7 @@ trait Common extends DataGenerationFileConfigs with WithJsonFormats with LazyLog
 
   def getScenario(scenarioName: String, suffixes: List[String], exec: HttpRequestBuilder) = {
     scenario(scenarioName)
-      .feed(prepareData(suffixes))
+      .feed(prepareData(suffixes).circular)
       .exec(exec)
   }
 
