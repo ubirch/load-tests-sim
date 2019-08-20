@@ -8,22 +8,38 @@ import scala.language.postfixOps
 
 class SendUPPAproxRateSecondsSimulation
   extends Simulation
-  with SendUPP
-  with Protocols
-  with ConfigBase {
+    with SendUPP
+    with Protocols
+    with ConfigBase {
 
-  val numberOfUsers: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.numberOfUsers")
-  val duringValue: Int = conf.getInt("sendUPPAproxRateSecondsSimulation.duringValue")
+  val stepConfs = conf.getConfigList("sendUPPAproxRateSecondsSimulation.steps")
+  val stepCount = stepConfs.size()
+
+  val steps = (0 until stepCount).toList.map { i =>
+    List(
+      stepConfs.get(i).getInt("rps"),
+      stepConfs.get(i).getInt("rampup"),
+      stepConfs.get(i).getInt("holdfor")
+    )
+  }
+
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
-  setUp(
-    sendScenario(devices)
-      .inject(
-        constantUsersPerSec(numberOfUsers) //The number of users here can be thought of as the number of req/s.
-          //if set to 14, it will send 14 messages per second
-          .during(duringValue seconds)
-      )
-  ).protocols(niomonProtocol)
+  val constantUsers: Int = (0 until stepCount).toList.map(i => steps(i).head).max
+  val during: Int = (0 until stepCount).toList.flatMap(i => List(steps(i)(1), steps(i)(2))).sum
+
+
+  // TODO make configurable
+  setUp(sendScenario(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
+    .throttle(
+      (0 until stepCount).toList.flatMap { i =>
+        List(
+          reachRps(steps(i)(0)) in (steps(i)(1) minute),
+          holdFor(steps(i)(2) minute)
+        )
+      }
+    )
+    .protocols(niomonProtocol)
 
 }
 
