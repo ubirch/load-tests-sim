@@ -8,9 +8,9 @@ import scala.language.postfixOps
 
 class SendUPPAproxRateSecondsSimulation
   extends Simulation
-    with SendUPP
-    with Protocols
-    with ConfigBase {
+  with SendUPP
+  with Protocols
+  with ConfigBase {
 
   val stepConfs = conf.getConfigList("sendUPPAproxRateSecondsSimulation.steps")
   val stepCount = stepConfs.size()
@@ -28,13 +28,18 @@ class SendUPPAproxRateSecondsSimulation
   val constantUsers: Int = (0 until stepCount).toList.map(i => steps(i).head).max
   val during: Int = (0 until stepCount).toList.flatMap(i => List(steps(i)(1), steps(i)(2))).sum
 
+  logger.info(s"injecting $constantUsers users during $during minutes")
+  logger.info(s"execution plan ($stepCount steps):")
+  for (i <- 0 until stepCount) {
+    logger.info(f"[$i%02d] reach ${steps(i).head} rps in ${steps(i)(1)} min, hold for ${steps(i)(2)} min")
+  }
 
   // TODO make configurable
   setUp(sendScenario(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
     .throttle(
       (0 until stepCount).toList.flatMap { i =>
         List(
-          reachRps(steps(i)(0)) in (steps(i)(1) minute),
+          reachRps(steps(i).head) in (steps(i)(1) minute),
           holdFor(steps(i)(2) minute)
         )
       }
