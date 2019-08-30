@@ -34,7 +34,6 @@ class SendUPPAproxRateSecondsSimulation
     logger.info(f"[$i%02d] reach ${steps(i).head} rps in ${steps(i)(1)} min, hold for ${steps(i)(2)} min")
   }
 
-  // TODO make configurable
   setUp(sendScenario(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
     .throttle(
       (0 until stepCount).toList.flatMap { i =>
