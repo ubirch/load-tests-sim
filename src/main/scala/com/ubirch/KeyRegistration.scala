@@ -48,8 +48,8 @@ object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with 
     """.stripMargin
   }
 
-  def registerKeyRequest(body: String) = {
-    val regRequest = new HttpPost("https://key." + ENV + ".ubirch.com/api/keyService/v1/pubkey")
+  def registerKeyRequest(url: String, body: String) = {
+    val regRequest = new HttpPost(url)
     regRequest.setHeader("Content-Type", "application/json")
     regRequest.setEntity(new StringEntity(body))
     regRequest
@@ -60,17 +60,17 @@ object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with 
     AbstractUbirchClient.createClientKey(clientKeyBytes)
   }
 
-  def register(deviceGeneration: DeviceGeneration) = {
+  def register(url: String, deviceId: UUID, privateKey: String, publicKey: String) = {
 
-    val clientKey = getKey(deviceGeneration.privateKey)
-    val protocol = new SimpleProtocolImpl(deviceGeneration.UUID, clientKey, serverUUID, serverKey)
+    val clientKey = getKey(privateKey)
+    val protocol = new SimpleProtocolImpl(deviceId, clientKey, serverUUID, serverKey)
 
-    val info = compact(parse(pubKeyInfoData(deviceGeneration.UUID, df, deviceGeneration.publicKey)))
-    val signature = protocol.sign(deviceGeneration.UUID, info.getBytes(StandardCharsets.UTF_8))
+    val info = compact(parse(pubKeyInfoData(deviceId, df, publicKey)))
+    val signature = protocol.sign(deviceId, info.getBytes(StandardCharsets.UTF_8))
     val data = compact(parse(registrationData(info, Base64.getEncoder.encodeToString(signature))))
 
     val verification = clientKey.verify(info.getBytes, signature)
-    val resp = client.execute(registerKeyRequest(data))
+    val resp = client.execute(registerKeyRequest(url, data))
     val body = DeviceGenerator.readEntity(resp)
 
     (info, data, verification, resp, body)
@@ -91,8 +91,9 @@ object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with 
     ReadFileControl(path, directory, fileName, Nil, ext).read { l =>
 
       val deviceGeneration = parse(l).extractOpt[DeviceGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
-      val (info, data, verification, resp, body) = register(deviceGeneration)
 
+      val url = "https://key." + ENV + ".ubirch.com/api/keyService/v1/pubkey"
+      val (info, data, verification, resp, body) = register(url, deviceGeneration.UUID, deviceGeneration.privateKey, deviceGeneration.publicKey)
       logOutput(info, data, verification, resp, body)
 
     }

@@ -13,7 +13,7 @@ trait Protocols extends EnvConfigs {
     .shareConnections
     .maxConnectionsPerHost(maxConnections)
 
-  val verifyUrl = "https://verify." + ENV + ".ubirch.com/api/verify"
+  val verifyUrl = "https://verify." + ENV + ".ubirch.com/api/upp/verify"
 
   lazy val verificationProtocol = http.baseUrl(verifyUrl)
 

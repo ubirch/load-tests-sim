@@ -11,8 +11,7 @@ trait VerifyUPP extends Common with LazyLogging {
   val verify = {
     http("Verify UPP data")
       .post("")
-
-      .header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationFormUrlEncoded)
+      .header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationJson)
       .body(StringBody(session => session("HASH").as[String]))
       .check(bodyString.find.notNull)
 

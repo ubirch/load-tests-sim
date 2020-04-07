@@ -6,21 +6,22 @@ import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.utils.Curve
 import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey }
 import com.ubirch.models.{ DeviceGeneration, WriteFileControl }
-import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, WithJsonFormats }
+import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats }
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.json4s.Extraction
+import org.json4s.{ Extraction, JValue }
+import org.json4s.JsonAST.JNothing
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
 import scala.annotation.tailrec
 import scala.io.StdIn.readLine
 
-object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with WithJsonFormats with LazyLogging {
+object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationFileConfigs with WithJsonFormats with LazyLogging {
 
   def encode(data: String) = Base64.getEncoder.encodeToString(data.getBytes)
 
@@ -57,6 +58,10 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
 
   def getDeviceCredentials(response: String) = {
     ((parse(response) \ "username").extract[String], (parse(response) \ "password").extract[String])
+  }
+
+  def getPassword(response: JValue) = {
+    (response \ "password").extract[String]
   }
 
   def getExternalId(response: String) = {
@@ -104,14 +109,16 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
   }
 
   @tailrec
-  def register(uuid: UUID): Unit = {
+  def registerForCumulocity(uuid: UUID): Unit = {
+    logger.info("Please go to https://ubirch.cumulocity.com/apps/devicemanagement/index.html#/deviceregistration and add the device and approve it. You can use the id that is presented above.")
+    logger.info("Copy this UUID " + uuid.toString + " and add it to Cumulocity and then come back here. ")
     val response = client.execute(deviceCredentialsRequest(deviceCredentialsData(uuid)))
     val code = response.getStatusLine.getStatusCode
     val deviceCredentialsEntityAsString = readEntity(response)
     logger.info(deviceCredentialsEntityAsString)
     if (code == 404) {
       Thread.sleep(5000)
-      register(uuid)
+      registerForCumulocity(uuid)
     } else if (code == 201) {
       val (u, p) = getDeviceCredentials(deviceCredentialsEntityAsString)
       val data = deviceInventoryData(uuid.toString)
@@ -139,7 +146,8 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
               )
 
               if (runKeyRegistration) {
-                val (info, data, verification, resp, body) = KeyRegistration.register(deviceGeneration)
+                val url = "https://key." + ENV + ".ubirch.com/api/keyService/v1/pubkey"
+                val (info, data, verification, resp, body) = KeyRegistration.register(url, deviceGeneration.UUID, deviceGeneration.privateKey, deviceGeneration.publicKey)
                 KeyRegistration.logOutput(info, data, verification, resp, body)
               }
 
@@ -157,12 +165,54 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
     }
   }
 
+  @tailrec
+  def readLines(result: String): String = {
+    val continue = readLine()
+    continue.trim match {
+      case "..." => result
+      case x => readLines(result + x)
+    }
+  }
+
+  def registerForConsole(uuid: UUID): Unit = {
+    logger.info("Please go to https://console.dev.ubirch.com/devices/list and add the device. You can use the id that is presented above.")
+    logger.info("Copy this UUID " + uuid.toString + " and add it as a Thing, copy the config json and paste it here.")
+    logger.info("Paste the device config. To finish enter ...")
+    val config = readLines("")
+
+    WriteFileControl(10000, path, directory, fileName, "", ext)
+      .secured { writer =>
+        val (publicKey, privateKey) = createKeys
+        val deviceGeneration = DeviceGeneration(
+          UUID = uuid,
+          deviceCredentials = parse(config),
+          deviceInventory = JNothing,
+          deviceExternalId = JNothing,
+          publicKey = publicKey,
+          privateKey = privateKey
+        )
+
+        if (runKeyRegistration) {
+          val url = "https://key." + ENV + ".ubirch.com/api/keyService/v1/pubkey"
+          val (info, data, verification, resp, body) = KeyRegistration.register(url, deviceGeneration.UUID, deviceGeneration.privateKey, deviceGeneration.publicKey)
+          KeyRegistration.logOutput(info, data, verification, resp, body)
+        }
+
+        val dataToStore = compact(Extraction.decompose(deviceGeneration))
+        writer.append(dataToStore)
+
+      }
+    logger.info("Device registered")
+  }
+
   def go(): Unit = {
     val uuid = UUID.randomUUID()
     logger.info("Creating device with id: " + uuid.toString)
-    logger.info("Please go to https://ubirch.cumulocity.com/apps/devicemanagement/index.html#/deviceregistration and add the device and approve it. You can use the id that is presented above.")
-    logger.info("Copy this UUID " + uuid.toString + " and add it to Cumulocity and then come back here. ")
-    register(uuid)
+
+    if (consoleRegistration)
+      registerForConsole(uuid)
+    else
+      registerForCumulocity(uuid)
 
     def more(): Unit = {
       val continue = readLine("Add another device? Y/n ")
@@ -179,6 +229,7 @@ object DeviceGenerator extends ConfigBase with DeviceGenerationFileConfigs with 
 
   def main(args: Array[String]): Unit = {
     logger.info("Automatic Key Registration is: " + (if (runKeyRegistration) "ON" else "OFF"))
+    logger.info("Console Registration is: " + (if (consoleRegistration) "ON" else "OFF"))
     go()
   }
 

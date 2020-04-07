@@ -21,6 +21,7 @@ trait DeviceGenerationFileConfigs extends ConfigBase {
   val fileName: String = conf.getString("deviceGenerator.fileName")
   val ext: String = conf.getString("deviceGenerator.ext")
   val runKeyRegistration: Boolean = conf.getBoolean("deviceGenerator.runKeyRegistration")
+  val consoleRegistration: Boolean = conf.getBoolean("deviceGenerator.consoleRegistration")
 }
 
 trait EnvConfigs extends ConfigBase {

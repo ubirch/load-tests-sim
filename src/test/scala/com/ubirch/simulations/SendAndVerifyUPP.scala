@@ -23,6 +23,10 @@ trait SendAndVerifyUPP extends Common with LazyLogging with Protocols {
   val send = {
     http("Send UPP data")
       .post("/")
+      .header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationOctetStream)
+      .header("X-Ubirch-Hardware-Id", session => session("hardware_id").as[String])
+      .header("X-Ubirch-Auth-Type", "ubirch")
+      .header("X-Ubirch-Credential", session => session("password").as[String])
       .header("Authorization", session => authHeader(session))
       .body(ByteArrayBody(createBody))
   }
@@ -35,7 +39,7 @@ trait SendAndVerifyUPP extends Common with LazyLogging with Protocols {
         println("HASH::: " + hash)
         hash
       }).transformResponse {
-        (s, r) =>
+        (_, r) =>
           println("STATUS::: " + r.status)
           r
       }
