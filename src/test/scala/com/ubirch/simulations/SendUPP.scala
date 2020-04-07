@@ -22,6 +22,10 @@ trait SendUPP extends Common with LazyLogging {
   val send = {
     http("Send UPP data")
       .post("/")
+      .header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationOctetStream)
+      .header("X-Ubirch-Hardware-Id", session => session("hardware_id").as[String])
+      .header("X-Ubirch-Auth-Type", "ubirch")
+      .header("X-Ubirch-Credential", session => session("password").as[String])
       .header("Authorization", session => authHeader(session))
       .body(ByteArrayBody(createBody))
   }
