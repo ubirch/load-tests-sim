@@ -40,7 +40,7 @@ trait Common extends DataGenerationFileConfigs with WithJsonFormats with LazyLog
         "HASH" -> dataGeneration.hash,
         "password" -> Base64.getEncoder.encodeToString(DeviceGenerator.getPassword(dataGeneration.deviceCredentials).getBytes(StandardCharsets.UTF_8)),
         "hardware_id" -> dataGeneration.UUID.toString,
-        "auth" -> (if(consoleRegistration) "" else auth)
+        "auth" -> (if (consoleRegistration) "" else auth)
       )
 
     }
