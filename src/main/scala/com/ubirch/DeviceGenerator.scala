@@ -1,19 +1,19 @@
 package com.ubirch
 
-import java.util.{Base64, UUID}
+import java.util.{ Base64, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.utils.Curve
-import com.ubirch.crypto.{GeneratorKeyFactory, PrivKey}
-import com.ubirch.models.{DeviceGeneration, WriteFileControl}
-import com.ubirch.util.{ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats}
+import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey }
+import com.ubirch.models.{ DeviceGeneration, WriteFileControl }
+import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats }
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.json4s.Extraction
+import org.json4s.{ Extraction, JValue }
 import org.json4s.JsonAST.JNothing
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
@@ -58,6 +58,10 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
 
   def getDeviceCredentials(response: String) = {
     ((parse(response) \ "username").extract[String], (parse(response) \ "password").extract[String])
+  }
+
+  def getPassword(response: JValue) = {
+    (response \ "password").extract[String]
   }
 
   def getExternalId(response: String) = {
@@ -161,7 +165,6 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
     }
   }
 
-
   @tailrec
   def readLines(result: String): String = {
     val continue = readLine()
@@ -206,7 +209,7 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
     val uuid = UUID.randomUUID()
     logger.info("Creating device with id: " + uuid.toString)
 
-    if(consoleRegistration)
+    if (consoleRegistration)
       registerForConsole(uuid)
     else
       registerForCumulocity(uuid)

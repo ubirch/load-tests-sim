@@ -88,8 +88,6 @@ object KeyRegistration extends ConfigBase with DeviceGenerationFileConfigs with 
 
     logger.info("Key Registration Started")
 
-
-
     ReadFileControl(path, directory, fileName, Nil, ext).read { l =>
 
       val deviceGeneration = parse(l).extractOpt[DeviceGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
