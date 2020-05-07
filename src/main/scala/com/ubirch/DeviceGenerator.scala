@@ -1,19 +1,19 @@
 package com.ubirch
 
-import java.util.{ Base64, UUID }
+import java.util.{Base64, UUID}
 
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.utils.Curve
-import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey }
-import com.ubirch.models.{ DeviceGeneration, WriteFileControl }
-import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats }
+import com.ubirch.crypto.{GeneratorKeyFactory, PrivKey}
+import com.ubirch.models.{DeviceGeneration, WriteFileControl}
+import com.ubirch.util.{ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats}
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
-import org.apache.http.client.methods.HttpPost
+import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.json4s.{ Extraction, JValue }
+import org.json4s.{Extraction, JArray, JValue}
 import org.json4s.JsonAST.JNothing
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
@@ -28,6 +28,40 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
   val auth = encode("devicebootstrap:" + deviceBootstrap)
 
   val client: HttpClient = HttpClients.createMinimal()
+
+
+  def simpleAuthTestConsole(authToken: String) = {
+    val req = new HttpGet("https://api.console.dev.ubirch.com/ubirch-web-ui/api/v1/users/accountInfo")
+    req.addHeader("Authorization", "bearer " + authToken)
+    req
+  }
+
+  def addDeviceInConsole(uuid: UUID, authToken: String) = {
+    val req = new HttpPost("https://api.console.dev.ubirch.com/ubirch-web-ui/api/v1/devices/elephants")
+    req.addHeader("Authorization", "bearer " + authToken)
+    req.addHeader("Content-Type", "application/json")
+    val reqBody = s"""{
+    "reqType": "creation",
+    "tags": "gateling",
+    "prefix": "",
+    "devices": [
+        {
+            "hwDeviceId": "${uuid.toString}",
+            "description": "gatling test",
+            "deviceType": "default_type",
+            "apiConfig": "",
+            "deviceConfig": "",
+            "groups": []}]}"""
+    req.setEntity(new StringEntity(reqBody))
+    req
+  }
+
+  def getDeviceConfigFromConsole(uuid: UUID, authToken: String) = {
+    val req = new HttpGet(s"https://api.console.dev.ubirch.com/ubirch-web-ui/api/v1/devices/${uuid.toString}")
+    req.addHeader("Authorization", "bearer " + authToken)
+    req.addHeader("Content-Type", "application/json")
+    req
+  }
 
   def deviceCredentialsRequest(data: String) = {
     val req = new HttpPost("https://ubirch.cumulocity.com/devicecontrol/deviceCredentials")
@@ -79,6 +113,16 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
   def externalIdData(uuid: UUID) = {
     s"""{"type":"c8y_Serial","externalId":"$uuid"}"""
   }
+
+  def getLoginName(response: String) = {
+    ((parse(response) \ "user" \ "firstname").extract[String], (parse(response) \ "user" \ "lastname").extract[String])
+  }
+
+  def getDeviceConfig(response: String) = {
+    (parse(response) \ "attributes" \ "apiConfig").extract[JArray]
+  }
+
+
 
   def deviceCredentialsData(uuid: UUID) = {
     compact(render("id" -> uuid.toString))
@@ -174,6 +218,66 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
     }
   }
 
+  def registerForConsoleAutomaticCreation: Unit = {
+
+    logger.info("Copy your console access token here (without the \"bearer\")")
+    logger.info("To finish, enter ...")
+    val accessToken = readLines("")
+    val response = client.execute(simpleAuthTestConsole(accessToken))
+    val actualValue = readEntity(response)
+    if (response.getStatusLine.getStatusCode == 200) {
+      logger.info(s"Hello ${getLoginName(actualValue)._1} ${getLoginName(actualValue)._2}. Seems like your auth token is valid.")
+      logger.info("How many devices would you like to create ?")
+      logger.info("To finish, enter ...")
+      val numberOfDevicesToAdd = readLines("").toInt
+      logger.info(s"Adding $numberOfDevicesToAdd devices with random UUIDs to your console")
+      logger.info("------------------------------------------")
+      def addDevice = {
+
+        val uuid = UUID.randomUUID()
+        val addRequest = addDeviceInConsole(uuid, accessToken)
+        val responseAdd = client.execute(addRequest)
+        val bodyValue = readEntity(responseAdd)
+        logger.info(s"bodyValue = $bodyValue")
+
+        val configReq = client.execute(getDeviceConfigFromConsole(uuid, accessToken))
+        val response = readEntity(configReq)
+        logger.info(s"deviceConfig = $response")
+        val deviceConfig = getDeviceConfig(response).children.head
+
+        WriteFileControl(10000, path, directory, fileName, "", ext)
+          .secured { writer =>
+            val (publicKey, privateKey) = createKeys
+            val deviceGeneration = DeviceGeneration(
+              UUID = uuid,
+              deviceCredentials = deviceConfig,
+              deviceInventory = JNothing,
+              deviceExternalId = JNothing,
+              publicKey = publicKey,
+              privateKey = privateKey
+            )
+            if (runKeyRegistration) {
+              val url = "https://key." + ENV + ".ubirch.com/api/keyService/v1/pubkey"
+              val (info, data, verification, resp, body) = KeyRegistration.register(url, deviceGeneration.UUID, deviceGeneration.privateKey, deviceGeneration.publicKey)
+              KeyRegistration.logOutput(info, data, verification, resp, body)
+            }
+            val dataToStore = compact(Extraction.decompose(deviceGeneration))
+            writer.append(dataToStore)
+          }
+
+      }
+
+      for {i <- 1 to numberOfDevicesToAdd} {
+        addDevice
+        if (i % 5 == 0 ) logger.info(s"added $i out of $numberOfDevicesToAdd devices")
+      }
+    } else {
+      logger.info("seems like the auth token is wrong. Please fix")
+    }
+
+
+  }
+
   def registerForConsole(uuid: UUID): Unit = {
     logger.info("Please go to https://console.dev.ubirch.com/devices/list and add the device. You can use the id that is presented above.")
     logger.info("Copy this UUID " + uuid.toString + " and add it as a Thing, copy the config json and paste it here.")
@@ -207,12 +311,18 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
 
   def go(): Unit = {
     val uuid = UUID.randomUUID()
-    logger.info("Creating device with id: " + uuid.toString)
 
     if (consoleRegistration)
-      registerForConsole(uuid)
-    else
+      if(consoleAutomaticCreation) registerForConsoleAutomaticCreation
+      else {
+        logger.info("Creating device with id: " + uuid.toString)
+        registerForConsole(uuid)
+      }
+    else{
+      logger.info("Creating device with id: " + uuid.toString)
       registerForCumulocity(uuid)
+    }
+
 
     def more(): Unit = {
       val continue = readLine("Add another device? Y/n ")
@@ -230,6 +340,9 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
   def main(args: Array[String]): Unit = {
     logger.info("Automatic Key Registration is: " + (if (runKeyRegistration) "ON" else "OFF"))
     logger.info("Console Registration is: " + (if (consoleRegistration) "ON" else "OFF"))
+    if (consoleRegistration) {
+      logger.info("Console automatic creation is: " + (if (consoleAutomaticCreation) "ON" else "OFF"))
+    }
     go()
   }
 
