@@ -1,19 +1,19 @@
 package com.ubirch
 
-import java.util.{Base64, UUID}
+import java.util.{ Base64, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.utils.Curve
-import com.ubirch.crypto.{GeneratorKeyFactory, PrivKey}
-import com.ubirch.models.{DeviceGeneration, WriteFileControl}
-import com.ubirch.util.{ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats}
+import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey }
+import com.ubirch.models.{ DeviceGeneration, WriteFileControl }
+import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats }
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
-import org.apache.http.client.methods.{HttpGet, HttpPost}
+import org.apache.http.client.methods.{ HttpGet, HttpPost }
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.json4s.{Extraction, JArray, JValue}
+import org.json4s.{ Extraction, JArray, JValue }
 import org.json4s.JsonAST.JNothing
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
@@ -28,7 +28,6 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
   val auth = encode("devicebootstrap:" + deviceBootstrap)
 
   val client: HttpClient = HttpClients.createMinimal()
-
 
   def simpleAuthTestConsole(authToken: String) = {
     val req = new HttpGet("https://api.console.dev.ubirch.com/ubirch-web-ui/api/v1/users/accountInfo")
@@ -121,8 +120,6 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
   def getDeviceConfig(response: String) = {
     (parse(response) \ "attributes" \ "apiConfig").extract[JArray]
   }
-
-
 
   def deviceCredentialsData(uuid: UUID) = {
     compact(render("id" -> uuid.toString))
@@ -267,14 +264,13 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
 
       }
 
-      for {i <- 1 to numberOfDevicesToAdd} {
+      for { i <- 1 to numberOfDevicesToAdd } {
         addDevice
-        if (i % 5 == 0 ) logger.info(s"added $i out of $numberOfDevicesToAdd devices")
+        if (i % 5 == 0) logger.info(s"added $i out of $numberOfDevicesToAdd devices")
       }
     } else {
       logger.info("seems like the auth token is wrong. Please fix")
     }
-
 
   }
 
@@ -313,16 +309,15 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
     val uuid = UUID.randomUUID()
 
     if (consoleRegistration)
-      if(consoleAutomaticCreation) registerForConsoleAutomaticCreation
+      if (consoleAutomaticCreation) registerForConsoleAutomaticCreation
       else {
         logger.info("Creating device with id: " + uuid.toString)
         registerForConsole(uuid)
       }
-    else{
+    else {
       logger.info("Creating device with id: " + uuid.toString)
       registerForCumulocity(uuid)
     }
-
 
     def more(): Unit = {
       val continue = readLine("Add another device? Y/n ")
