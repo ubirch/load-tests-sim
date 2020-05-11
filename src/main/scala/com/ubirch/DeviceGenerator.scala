@@ -266,10 +266,10 @@ object DeviceGenerator extends ConfigBase with EnvConfigs with DeviceGenerationF
 
       for { i <- 1 to numberOfDevicesToAdd } {
         addDevice
-        if (i % 5 == 0) logger.info(s"added $i out of $numberOfDevicesToAdd devices")
+        if (i % 5 == 0) logger.info(s"Added $i out of $numberOfDevicesToAdd devices")
       }
     } else {
-      logger.info("seems like the auth token is wrong. Please fix")
+      logger.info("Seems like the auth token is wrong. Please make sure you provide a valid access token")
     }
 
   }
