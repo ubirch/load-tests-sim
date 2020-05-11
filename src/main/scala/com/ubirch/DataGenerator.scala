@@ -67,7 +67,12 @@ object DataGenerator extends ConfigBase with WithJsonFormats with LazyLogging {
 
     val total = new Total
 
-    ReadFileControl(DataGenerationFileConfigs.path, DataGenerationFileConfigs.directory, DataGenerationFileConfigs.fileName, Nil, DataGenerationFileConfigs.ext)
+    ReadFileControl(
+      DeviceGenerationFileConfigs.path,
+      DeviceGenerationFileConfigs.directory,
+      DeviceGenerationFileConfigs.fileName,
+      Nil,
+      DeviceGenerationFileConfigs.ext)
       .read { l =>
 
         val dataGeneration = parse(l).extractOpt[DeviceGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
