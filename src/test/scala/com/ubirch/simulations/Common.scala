@@ -6,13 +6,13 @@ import java.util.Base64
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.DeviceGenerator
 import com.ubirch.models.{ DataGeneration, ReadFileControl }
-import com.ubirch.util.{ DataGenerationFileConfigs, Helpers, WithJsonFormats }
+import com.ubirch.util.{ ConfigBase, DataGenerationFileConfigs, Helpers, WithJsonFormats }
 import io.gatling.core.Predef._
 import io.gatling.core.feeder.SourceFeederBuilder
 import io.gatling.http.request.builder.HttpRequestBuilder
 import org.json4s.jackson.JsonMethods._
 
-trait Common extends DataGenerationFileConfigs with WithJsonFormats with LazyLogging {
+trait Common extends WithJsonFormats with ConfigBase with LazyLogging {
 
   val data = scala.collection.mutable.ListBuffer.empty[Map[String, String]]
 
@@ -31,19 +31,25 @@ trait Common extends DataGenerationFileConfigs with WithJsonFormats with LazyLog
   }
 
   def loadData(suffixes: List[String]) = {
-    ReadFileControl(path, directory, fileName, suffixes, ext).read { l =>
+    ReadFileControl(
+      DataGenerationFileConfigs.path,
+      DataGenerationFileConfigs.directory,
+      DataGenerationFileConfigs.fileName,
+      suffixes,
+      DataGenerationFileConfigs.ext
+    ).read { l =>
 
-      lazy val dataGeneration = parse(l).extractOpt[DataGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
-      lazy val auth: String = Helpers.encodedAuth(dataGeneration.deviceCredentials)
-      data += Map(
-        "UPP" -> dataGeneration.upp,
-        "HASH" -> dataGeneration.hash,
-        "password" -> Base64.getEncoder.encodeToString(DeviceGenerator.getPassword(dataGeneration.deviceCredentials).getBytes(StandardCharsets.UTF_8)),
-        "hardware_id" -> dataGeneration.UUID.toString,
-        "auth" -> (if (consoleRegistration) "" else auth)
-      )
+        lazy val dataGeneration = parse(l).extractOpt[DataGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
+        lazy val auth: String = Helpers.encodedAuth(dataGeneration.deviceCredentials)
+        data += Map(
+          "UPP" -> dataGeneration.upp,
+          "HASH" -> dataGeneration.hash,
+          "password" -> Base64.getEncoder.encodeToString(DeviceGenerator.getPassword(dataGeneration.deviceCredentials).getBytes(StandardCharsets.UTF_8)),
+          "hardware_id" -> dataGeneration.UUID.toString,
+          "auth" -> (if (consoleRegistration) "" else auth)
+        )
 
-    }
+      }
 
     println("Data total: " + data.size)
     logger.info("Data total: " + data.size)
@@ -51,6 +57,17 @@ trait Common extends DataGenerationFileConfigs with WithJsonFormats with LazyLog
 
     data
   }
+
+  //  val feeder = Iterator.continually {
+  //    Map(
+  //      "UPP" -> dataGeneration.upp,
+  //      "HASH" -> dataGeneration.hash,
+  //      "password" -> Base64.getEncoder.encodeToString(DeviceGenerator.getPassword(dataGeneration.deviceCredentials).getBytes(StandardCharsets.UTF_8)),
+  //      "hardware_id" -> dataGeneration.UUID.toString,
+  //      "auth" -> (if (consoleRegistration) "" else auth)
+  //    )
+  //  }
+  //val feeder = Iterator.continually(Map("email" -> (Random.alphanumeric.take(20).mkString + "@foo.com")))
 
   def getScenario(scenarioName: String, suffixes: List[String], exec: HttpRequestBuilder) = {
     scenario(scenarioName)
