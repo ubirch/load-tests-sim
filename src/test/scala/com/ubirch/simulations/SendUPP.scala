@@ -34,4 +34,8 @@ trait SendUPP extends Common with LazyLogging {
     getScenario("Device Message (UPP)", suffixes, send)
   }
 
+  def sendScenario2(continuous: Continuous) = {
+    getScenario2("Device Message (UPP)", continuous, send)
+  }
+
 }

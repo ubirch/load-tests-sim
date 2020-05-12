@@ -1,5 +1,6 @@
 package com.ubirch.simulations
 
+import com.ubirch.DeviceGenerator
 import com.ubirch.util.ConfigBase
 import io.gatling.core.Predef._
 
@@ -74,6 +75,53 @@ class SendUPPAproxRateSecondsSimulation2
       reachRps(rps2) in (rampup2 minute),
       holdFor(holdfor2 minutes)
     ).protocols(niomonProtocol)
+
+}
+
+class SendUPPAproxRateSecondsSimulation3
+  extends Simulation
+  with SendUPP
+  with Protocols
+  with ConfigBase {
+
+  val stepConfs = conf.getConfigList("sendUPPAproxRateSecondsSimulation.steps")
+  val stepCount = stepConfs.size()
+
+  val steps = (0 until stepCount).toList.map { i =>
+    List(
+      stepConfs.get(i).getInt("rps"),
+      stepConfs.get(i).getInt("rampup"),
+      stepConfs.get(i).getInt("holdfor")
+    )
+  }
+
+  val onlyTheseDevices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
+  val devices = DeviceGenerator.loadDevices(onlyTheseDevices)
+
+  val continuous = new Continuous(devices)
+
+  val constantUsers: Int = (0 until stepCount).toList.map(i => steps(i).head).max
+  val during: Int = (0 until stepCount).toList.flatMap(i => List(steps(i)(1), steps(i)(2))).sum
+
+  logger.info(s"injecting $constantUsers users during $during minutes")
+  logger.info(s"execution plan ($stepCount steps):")
+  for (i <- 0 until stepCount) {
+    logger.info(f"[$i%02d] reach ${steps(i).head} rps in ${steps(i)(1)} min, hold for ${steps(i)(2)} min")
+  }
+
+  setUp(
+    sendScenario2(continuous)
+      .inject(constantUsersPerSec(constantUsers).during(during minutes))
+  )
+    .throttle(
+      (0 until stepCount).toList.flatMap { i =>
+        List(
+          reachRps(steps(i).head) in (steps(i)(1) minute),
+          holdFor(steps(i)(2) minute)
+        )
+      }
+    )
+    .protocols(niomonProtocol)
 
 }
 

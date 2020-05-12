@@ -1,19 +1,19 @@
 package com.ubirch.simulations
 
-import com.ubirch.util.EnvConfigs
+import com.ubirch.util.{ ConfigBase, EnvConfigs }
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
-trait Protocols extends EnvConfigs {
+trait Protocols extends ConfigBase {
 
   val maxConnections = conf.getInt("maxConnectionsForSendingUPPSimulation")
 
   lazy val niomonProtocol = http
-    .baseUrl("https://niomon." + ENV + ".ubirch.com")
+    .baseUrl("https://niomon." + EnvConfigs.ENV + ".ubirch.com")
     .shareConnections
     .maxConnectionsPerHost(maxConnections)
 
-  val verifyUrl = "https://verify." + ENV + ".ubirch.com/api/upp/verify"
+  val verifyUrl = "https://verify." + EnvConfigs.ENV + ".ubirch.com/api/upp/verify"
 
   lazy val verificationProtocol = http.baseUrl(verifyUrl)
 
