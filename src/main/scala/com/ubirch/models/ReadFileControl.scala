@@ -31,13 +31,14 @@ case class ReadFileControl(path: String, directory: String, fileName: String, su
     if (filesAsList.isEmpty) {
       logger.info("No files to read from.")
     }
-    filesAsList.foreach { f =>
+    filesAsList.flatMap { f =>
       val re = Source.fromFile(f)
       try {
-        re.getLines().foreach(func)
+        re.getLines().map(func).toList
       } catch {
         case e: Exception =>
           logger.error("Error reading file" + e.getMessage)
+          throw e
       } finally {
         re.close()
       }

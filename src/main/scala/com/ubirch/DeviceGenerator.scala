@@ -5,7 +5,7 @@ import java.util.{ Base64, UUID }
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.crypto.utils.Curve
 import com.ubirch.crypto.{ GeneratorKeyFactory, PrivKey }
-import com.ubirch.models.{ DeviceGeneration, WriteFileControl }
+import com.ubirch.models.{ DeviceGeneration, ReadFileControl, WriteFileControl }
 import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats }
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
@@ -23,11 +23,24 @@ import scala.io.StdIn.readLine
 
 object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging {
 
-  def encode(data: String) = Base64.getEncoder.encodeToString(data.getBytes)
-
   val auth = encode("devicebootstrap:" + DeviceGenerationFileConfigs.deviceBootstrap)
 
   val client: HttpClient = HttpClients.createMinimal()
+
+  def loadDevices(suffixes: List[String] = Nil) = {
+    ReadFileControl(
+      DeviceGenerationFileConfigs.path,
+      DeviceGenerationFileConfigs.directory,
+      DeviceGenerationFileConfigs.fileName,
+      suffixes,
+      DeviceGenerationFileConfigs.ext
+    )
+      .read { l =>
+        parse(l).extractOpt[DeviceGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
+      }
+  }
+
+  def encode(data: String) = Base64.getEncoder.encodeToString(data.getBytes)
 
   def simpleAuthTestConsole(authToken: String) = {
     val req = new HttpGet("https://api.console.dev.ubirch.com/ubirch-web-ui/api/v1/users/accountInfo")
@@ -41,7 +54,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
     req.addHeader("Content-Type", "application/json")
     val reqBody = s"""{
     "reqType": "creation",
-    "tags": "gateling",
+    "tags": "gatling",
     "prefix": "",
     "devices": [
         {
@@ -247,7 +260,13 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
         val configReq = client.execute(getDeviceConfigFromConsole(uuid, accessToken))
         val response = readEntity(configReq)
         logger.info(s"deviceConfig = $response")
-        val deviceConfig = getDeviceConfig(response).children.head
+        val deviceConfig = {
+          val data = compact(getDeviceConfig(response).children.head)
+          if (data.startsWith("\"") && data.endsWith("\"") && data.contains("\\"))
+            data.stripPrefix("\"").stripSuffix("\"").replace("\\", "")
+          else
+            data
+        }
 
         WriteFileControl(
           10000,
@@ -261,7 +280,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
             val (publicKey, privateKey) = createKeys
             val deviceGeneration = DeviceGeneration(
               UUID = uuid,
-              deviceCredentials = deviceConfig,
+              deviceCredentials = parse(deviceConfig),
               deviceInventory = JNothing,
               deviceExternalId = JNothing,
               publicKey = publicKey,

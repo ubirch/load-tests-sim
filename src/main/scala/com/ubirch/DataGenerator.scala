@@ -3,7 +3,6 @@ package com.ubirch
 import java.util.UUID
 
 import com.typesafe.scalalogging.LazyLogging
-import com.ubirch.KeyRegistration.getKey
 import com.ubirch.crypto.{ PrivKey, PubKey }
 import com.ubirch.models._
 import com.ubirch.util._
@@ -72,11 +71,12 @@ object DataGenerator extends ConfigBase with WithJsonFormats with LazyLogging {
       DeviceGenerationFileConfigs.directory,
       DeviceGenerationFileConfigs.fileName,
       Nil,
-      DeviceGenerationFileConfigs.ext)
+      DeviceGenerationFileConfigs.ext
+    )
       .read { l =>
 
         val dataGeneration = parse(l).extractOpt[DeviceGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
-        val clientKey = getKey(dataGeneration.privateKey)
+        val clientKey = KeyRegistration.getKey(dataGeneration.privateKey)
         new DataGenerator(total, dataGeneration, clientKey, EnvConfigs.serverUUID, EnvConfigs.serverKey)
 
       }
