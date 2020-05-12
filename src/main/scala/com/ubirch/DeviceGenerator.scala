@@ -255,11 +255,11 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
         val addRequest = addDeviceInConsole(uuid, accessToken)
         val responseAdd = client.execute(addRequest)
         val bodyValue = readEntity(responseAdd)
-        logger.info(s"bodyValue = $bodyValue")
+        //logger.info(s"bodyValue = $bodyValue")
 
         val configReq = client.execute(getDeviceConfigFromConsole(uuid, accessToken))
         val response = readEntity(configReq)
-        logger.info(s"deviceConfig = $response")
+        //logger.info(s"deviceConfig = $response")
         val deviceConfig = {
           val data = compact(getDeviceConfig(response).children.head)
           if (data.startsWith("\"") && data.endsWith("\"") && data.contains("\\"))
