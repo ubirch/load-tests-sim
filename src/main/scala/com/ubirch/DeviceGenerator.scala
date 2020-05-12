@@ -23,9 +23,9 @@ import scala.io.StdIn.readLine
 
 object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging {
 
-  val auth = encode("devicebootstrap:" + DeviceGenerationFileConfigs.deviceBootstrap)
+  lazy val auth = encode("devicebootstrap:" + DeviceGenerationFileConfigs.deviceBootstrap)
 
-  val client: HttpClient = HttpClients.createMinimal()
+  lazy val client: HttpClient = HttpClients.createMinimal()
 
   def loadDevices(suffixes: List[String] = Nil) = {
     ReadFileControl(

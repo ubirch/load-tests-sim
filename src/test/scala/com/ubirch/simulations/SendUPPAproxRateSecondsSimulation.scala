@@ -97,8 +97,9 @@ class SendUPPAproxRateSecondsSimulation3
 
   val onlyTheseDevices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
   val devices = DeviceGenerator.loadDevices(onlyTheseDevices)
-
   val continuous = new Continuous(devices)
+
+  logger.info("Found {} devices", continuous.length)
 
   val constantUsers: Int = (0 until stepCount).toList.map(i => steps(i).head).max
   val during: Int = (0 until stepCount).toList.flatMap(i => List(steps(i)(1), steps(i)(2))).sum
