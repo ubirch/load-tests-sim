@@ -103,6 +103,14 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
     data
   }
 
+  def sendScenarioWithFileData(suffixes: List[String]): ScenarioBuilder = {
+    getScenarioWithFileData("Device Message (UPPs)", suffixes, send)
+  }
+
+  def sendScenarioWithContinuousData(continuous: Continuous): ScenarioBuilder = {
+    getScenarioWithContinuousData("Device Message (Continuous UPPs)", continuous, send)
+  }
+
   def sendAndVerifyScenario(suffixes: List[String]): ScenarioBuilder = {
     getScenarioWithFileData("Device Message (UPPs)", suffixes, send)
       .pause(10 seconds)
@@ -113,14 +121,6 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
     scenario(scenarioName)
       .feed(prepareData(suffixes).circular)
       .exec(exec)
-  }
-
-  def sendScenarioWithFileData(suffixes: List[String]): ScenarioBuilder = {
-    getScenarioWithFileData("Device Message (UPPs)", suffixes, send)
-  }
-
-  def sendScenarioWithContinuousData(continuous: Continuous): ScenarioBuilder = {
-    getScenarioWithContinuousData("Device Message (Continuous UPPs)", continuous, send)
   }
 
   def getScenarioWithContinuousData(scenarioName: String, continuous: Continuous, exec: HttpRequestBuilder): ScenarioBuilder = {
