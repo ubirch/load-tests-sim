@@ -1,6 +1,5 @@
 package com.ubirch.simulations
 
-import com.ubirch.DeviceGenerator
 import io.gatling.core.Predef._
 
 import scala.concurrent.duration._
