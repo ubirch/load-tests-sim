@@ -1,16 +1,11 @@
 package com.ubirch.simulations
 
-import com.ubirch.util.ConfigBase
 import io.gatling.core.Predef._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class SendUPPRampUsersSimulation
-  extends Simulation
-  with SendUPP
-  with Protocols
-  with ConfigBase {
+class SendUPPRampUsersSimulation extends Simulation with WithScenarios {
 
   val numberOfUsers: Int = conf.getInt("sendUPPRampUsersSimulation.numberOfUsers")
   val duringValue: Int = conf.getInt("sendUPPRampUsersSimulation.duringValue")

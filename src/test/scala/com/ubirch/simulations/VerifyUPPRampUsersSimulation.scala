@@ -1,16 +1,11 @@
 package com.ubirch.simulations
 
-import com.ubirch.util.ConfigBase
 import io.gatling.core.Predef._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class VerifyUPPRampUsersSimulation
-  extends Simulation
-  with VerifyUPP
-  with Protocols
-  with ConfigBase {
+class VerifyUPPRampUsersSimulation extends Simulation with WithScenarios {
 
   val numberOfUsers: Int = conf.getInt("verifyUPPRampUsersSimulation.numberOfUsers")
   val duringValue: Int = conf.getInt("verifyUPPRampUsersSimulation.duringValue")
