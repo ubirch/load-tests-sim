@@ -13,6 +13,7 @@ import io.gatling.core.structure.ScenarioBuilder
 import io.gatling.http.Predef.{ HttpHeaderNames, HttpHeaderValues, http, _ }
 import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.HttpRequestBuilder
+import org.json4s.Extraction
 import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration._
@@ -45,11 +46,11 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
       .header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationJson)
       .body(StringBody { session =>
         val hash = session("HASH").as[String]
-        println("HASH::: " + hash)
+        //println("HASH::: " + hash)
         hash
       }).transformResponse {
         (_, r) =>
-          println("STATUS::: " + r.status)
+          //println("STATUS::: " + r.status)
           r
       }.check(bodyString.find.notNull)
 
@@ -144,23 +145,38 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
     }
     val feeder: Iterator[Map[String, String]] = Iterator.continually {
 
-      val (dataGeneration, payloadGenerator) = random
-      lazy val auth: String = Helpers.encodedAuth(dataGeneration.deviceCredentials)
+      val (deviceGeneration, payloadGenerator) = random
+      lazy val auth: String = Helpers.encodedAuth(deviceGeneration.deviceCredentials)
 
       val (_, upp, hash) = payloadGenerator.getOneAsString
 
       val passwordAsBytes = DeviceGenerator
-        .getPassword(dataGeneration.deviceCredentials)
+        .getPassword(deviceGeneration.deviceCredentials)
         .getBytes(StandardCharsets.UTF_8)
       val passwordAsBase64 = Base64.getEncoder.encodeToString(passwordAsBytes)
+
+      val dataGeneration = DataGeneration(deviceGeneration.UUID, deviceGeneration.deviceCredentials, upp, hash)
+
+      WriteFileControl(
+        DataGenerationFileConfigs.numberOfMessagesPerFile,
+        DataGenerationFileConfigs.path,
+        DataGenerationFileConfigs.directory,
+        DataGenerationFileConfigs.fileName,
+        "Verification_",
+        DataGenerationFileConfigs.ext
+      ).secured { w =>
+          val dataToStore = compact(Extraction.decompose(dataGeneration))
+          w.append(dataToStore)
+        }
 
       Map(
         "UPP" -> upp,
         "HASH" -> hash,
         "password" -> passwordAsBase64,
-        "hardware_id" -> dataGeneration.UUID.toString,
+        "hardware_id" -> deviceGeneration.UUID.toString,
         "auth" -> (if (consoleRegistration) "" else auth)
       )
+
     }
 
     def random: (DeviceGeneration, PayloadGenerator) = generators(scala.util.Random.nextInt(length))
