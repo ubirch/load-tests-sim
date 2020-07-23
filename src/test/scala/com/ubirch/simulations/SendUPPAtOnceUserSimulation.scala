@@ -14,6 +14,6 @@ class SendUPPAtOnceUserSimulation
   val numberOfUsers: Int = conf.getInt("sendUPPAtOnceUserSimulation.numberOfUsers")
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
-  setUp(sendScenario(devices).inject(atOnceUsers(numberOfUsers))).protocols(niomonProtocol)
+  setUp(sendScenarioWithFileData(devices).inject(atOnceUsers(numberOfUsers))).protocols(niomonProtocol)
 
 }

@@ -16,10 +16,10 @@ import scala.util.Try
 
 trait Common extends WithJsonFormats with ConfigBase with LazyLogging {
 
-  val data = scala.collection.mutable.ListBuffer.empty[Map[String, String]]
+  lazy val data = scala.collection.mutable.ListBuffer.empty[Map[String, String]]
 
-  def dataReadType: String = conf.getString("dataReadType")
-  val consoleRegistration: Boolean = conf.getBoolean("deviceGenerator.consoleRegistration")
+  lazy val dataReadType: String = conf.getString("dataReadType")
+  lazy val consoleRegistration: Boolean = conf.getBoolean("deviceGenerator.consoleRegistration")
 
   def prepareData(suffixes: List[String]): SourceFeederBuilder[String] = {
     val data = loadData(suffixes).toIndexedSeq
@@ -42,6 +42,7 @@ trait Common extends WithJsonFormats with ConfigBase with LazyLogging {
 
         lazy val dataGeneration = parse(l).extractOpt[DataGeneration].getOrElse(throw new Exception("Something wrong happened when reading data"))
         lazy val auth: String = Helpers.encodedAuth(dataGeneration.deviceCredentials)
+
         data += Map(
           "UPP" -> dataGeneration.upp,
           "HASH" -> dataGeneration.hash,
@@ -71,15 +72,17 @@ trait Common extends WithJsonFormats with ConfigBase with LazyLogging {
 
     def random: (DeviceGeneration, PayloadGenerator) = generators(scala.util.Random.nextInt(length))
 
-    val feeder = Iterator.continually {
+    val feeder: Iterator[Map[String, String]] = Iterator.continually {
+
       val (dataGeneration, payloadGenerator) = random
       lazy val auth: String = Helpers.encodedAuth(dataGeneration.deviceCredentials)
 
       val (_, upp, hash) = payloadGenerator.getOneAsString
 
-      val password = Try(Base64.getEncoder
-        .encodeToString(DeviceGenerator.getPassword(dataGeneration.deviceCredentials).getBytes(StandardCharsets.UTF_8)))
-        .get
+      val password = Try(
+        Base64.getEncoder
+          .encodeToString(DeviceGenerator.getPassword(dataGeneration.deviceCredentials).getBytes(StandardCharsets.UTF_8))
+      ).get
 
       Map(
         "UPP" -> upp,
@@ -91,13 +94,13 @@ trait Common extends WithJsonFormats with ConfigBase with LazyLogging {
     }
   }
 
-  def getScenario(scenarioName: String, suffixes: List[String], exec: HttpRequestBuilder) = {
+  def getScenarioWithFileData(scenarioName: String, suffixes: List[String], exec: HttpRequestBuilder) = {
     scenario(scenarioName)
       .feed(prepareData(suffixes).circular)
       .exec(exec)
   }
 
-  def getScenario2(scenarioName: String, continuous: Continuous, exec: HttpRequestBuilder) = {
+  def getScenarioWithContinuousData(scenarioName: String, continuous: Continuous, exec: HttpRequestBuilder) = {
     scenario(scenarioName)
       .feed(continuous.feeder)
       .exec(exec)

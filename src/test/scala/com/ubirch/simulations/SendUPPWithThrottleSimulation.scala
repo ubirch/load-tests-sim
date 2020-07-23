@@ -21,7 +21,7 @@ class SendUPPWithThrottleSimulation
   //val inV: Int = conf.getInt("sendUPPConstantUsersWithThrottleSimulation.in")
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
-  setUp(sendScenario(devices).inject(constantUsersPerSec(50) during (5 minutes)))
+  setUp(sendScenarioWithFileData(devices).inject(constantUsersPerSec(50) during (5 minutes)))
     .throttle(
       reachRps(30) in (10 seconds),
       holdFor(30 seconds),

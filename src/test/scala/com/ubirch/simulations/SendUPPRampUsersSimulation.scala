@@ -17,7 +17,7 @@ class SendUPPRampUsersSimulation
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
   setUp(
-    sendScenario(devices).inject(
+    sendScenarioWithFileData(devices).inject(
       rampUsers(numberOfUsers)
         .during(duringValue seconds)
     )

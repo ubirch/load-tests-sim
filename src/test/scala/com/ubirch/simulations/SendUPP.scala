@@ -3,23 +3,25 @@ package com.ubirch.simulations
 import com.typesafe.scalalogging.LazyLogging
 import com.ubirch.models.AbstractUbirchClient
 import io.gatling.core.Predef._
+import io.gatling.core.structure.ScenarioBuilder
 import io.gatling.http.Predef._
+import io.gatling.http.request.builder.HttpRequestBuilder
 
 import scala.language.postfixOps
 
 trait SendUPP extends Common with LazyLogging {
 
-  def createBody(session: Session) = {
+  private def createBody(session: Session): Array[Byte] = {
     val value = session("UPP").as[String]
     AbstractUbirchClient.toBytesFromHex(value)
   }
 
-  def authHeader(session: Session) = {
+  private def authHeader(session: Session): String = {
     val auth = session("auth").as[String]
     "Basic " + auth
   }
 
-  val send = {
+  private val send: HttpRequestBuilder = {
     http("Send UPP data")
       .post("/")
       .header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationOctetStream)
@@ -30,12 +32,12 @@ trait SendUPP extends Common with LazyLogging {
       .body(ByteArrayBody(createBody))
   }
 
-  def sendScenario(suffixes: List[String]) = {
-    getScenario("Device Message (UPP)", suffixes, send)
+  def sendScenarioWithFileData(suffixes: List[String]): ScenarioBuilder = {
+    getScenarioWithFileData("Device Message (UPPs)", suffixes, send)
   }
 
-  def sendScenario2(continuous: Continuous) = {
-    getScenario2("Device Message (UPP)", continuous, send)
+  def sendScenarioWithContinuousData(continuous: Continuous): ScenarioBuilder = {
+    getScenarioWithContinuousData("Device Message (Continuous UPPs)", continuous, send)
   }
 
 }

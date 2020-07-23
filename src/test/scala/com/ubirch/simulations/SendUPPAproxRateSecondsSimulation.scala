@@ -35,7 +35,7 @@ class SendUPPAproxRateSecondsSimulation
     logger.info(f"[$i%02d] reach ${steps(i).head} rps in ${steps(i)(1)} min, hold for ${steps(i)(2)} min")
   }
 
-  setUp(sendScenario(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
+  setUp(sendScenarioWithFileData(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
     .throttle(
       (0 until stepCount).toList.flatMap { i =>
         List(
@@ -68,7 +68,7 @@ class SendUPPAproxRateSecondsSimulation2
   val during: Int = rampup1 + holdfor1 + rampup2 + holdfor2
 
   // TODO make configurable
-  setUp(sendScenario(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
+  setUp(sendScenarioWithFileData(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
     .throttle(
       reachRps(rps1) in (rampup1 minute),
       holdFor(holdfor1 minute),
@@ -106,12 +106,13 @@ class SendUPPAproxRateSecondsSimulation3
 
   logger.info(s"injecting $constantUsers users during $during minutes")
   logger.info(s"execution plan ($stepCount steps):")
+
   for (i <- 0 until stepCount) {
     logger.info(f"[$i%02d] reach ${steps(i).head} rps in ${steps(i)(1)} min, hold for ${steps(i)(2)} min")
   }
 
   setUp(
-    sendScenario2(continuous)
+    sendScenarioWithContinuousData(continuous)
       .inject(constantUsersPerSec(constantUsers).during(during minutes))
   )
     .throttle(

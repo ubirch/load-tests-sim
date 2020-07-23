@@ -18,7 +18,7 @@ trait VerifyUPP extends Common with LazyLogging {
   }
 
   def verifyScenario(suffixes: List[String]) = {
-    getScenario("Device Verification (UPP)", suffixes, verify)
+    getScenarioWithFileData("Device Verification (UPP)", suffixes, verify)
   }
 
 }

@@ -22,7 +22,7 @@ class SendUPPConstantUsersWithThrottleSimulation
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
   setUp(
-    sendScenario(devices)
+    sendScenarioWithFileData(devices)
       .inject(
         constantUsersPerSec(200)
           .during(60 minutes)
