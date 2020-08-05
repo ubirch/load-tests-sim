@@ -43,7 +43,7 @@ class VerifyUPPAproxRateSecondsSimulationContinuous extends Simulation with With
         )
       }
     )
-    .protocols(niomonProtocol)
+    .protocols(verificationProtocol)
 
 }
 

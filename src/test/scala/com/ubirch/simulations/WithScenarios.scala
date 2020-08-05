@@ -29,6 +29,8 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
 
   private val sendUPPUrl: String = "https://niomon." + EnvConfigs.ENV + ".ubirch.com"
   private val verifyUrl: String = "https://verify." + EnvConfigs.ENV + ".ubirch.com/api/upp/verify"
+  private val verifyWithAnchorUrl: String = verifyUrl + "/anchor"
+  private val verifyWithRecordUrl: String = verifyUrl + "/record"
 
   private val send: HttpRequestBuilder = {
     http("Send UPP data")
@@ -42,7 +44,7 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
   }
   private val verify: HttpRequestBuilder = {
     http("Verify UPP data")
-      .post(verifyUrl)
+      .post(verifyWithRecordUrl)
       .header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationJson)
       .body(StringBody { session =>
         val hash = session("HASH").as[String]
