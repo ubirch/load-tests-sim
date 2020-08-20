@@ -1,16 +1,11 @@
 package com.ubirch.simulations
 
-import com.ubirch.util.ConfigBase
 import io.gatling.core.Predef._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class SendUPPWithThrottleSimulation
-  extends Simulation
-  with SendUPP
-  with Protocols
-  with ConfigBase {
+class SendUPPWithThrottleSimulation extends Simulation with WithScenarios {
 
   // *****
   // Temporarily disabled so we can run some quick tests. //

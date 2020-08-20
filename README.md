@@ -1,8 +1,10 @@
-# load-tests-sim
+# Load Test Driver
 
 ## Purpose
 
 The purpose of this project is to create/assemble the basic tools to be able to test the Niomon-Eventlog loop.
+
+In general the tools has two options for sending data, 1) based on a data previously created and 2) data generated on the fly.
 
 ## Workflow
 
@@ -35,6 +37,8 @@ Additionally, the throughput is possible to be configured.
 * **SendUPPAproxRateSecondsSimulation**: It is a simulation that simulates a number of requests per second over a fixed duration.
 * **VerifyUPPAtOnceUserSimulation**: It is a simulation that verifies the data that was sent injecting a fixed number of users all at once.  
 * **VerifyUPPRampUsersSimulation**: It is a simulation that verifies the data that was sent injecting a growing number of users over a period of time.
+* **SendUPPAproxRateSecondsSimulationContinuous**: It is a simulation that sends data based on steps. Very good for gradual injection.
+* **VerifyUPPAproxRateSecondsSimulationContinuous**: It is a simulation that verifies the data that was sent injecting data in steps.
 
 
 ## How to run the workflow.
@@ -106,6 +110,8 @@ Additionally, the throughput is possible to be configured.
 * **SendUPPAproxRateSecondsSimulation**: It is a simulation that simulates a number of requests per second over a fixed duration.
 * **VerifyUPPAtOnceUserSimulation**: It is a simulation that verifies the data that was sent injecting a fixed number of users all at once.  
 * **VerifyUPPRampUsersSimulation**: It is a simulation that verifies the data that was sent injecting a growing number of users over a period of time.
+* **SendUPPAproxRateSecondsSimulationContinuous**: It is a simulation that sends data based on steps. Very good for gradual injection.
+* **VerifyUPPAproxRateSecondsSimulationContinuous**: It is a simulation that verifies the data that was sent injecting data in steps.
 
 In order to star the simulations, you have two options, you either run all the simulations or you select which one you would like to start first.
 I would recommend that latter as you are able to observe a little better the results of the simulations.

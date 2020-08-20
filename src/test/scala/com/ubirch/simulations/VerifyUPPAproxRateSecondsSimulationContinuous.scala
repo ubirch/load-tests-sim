@@ -5,7 +5,7 @@ import io.gatling.core.Predef._
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class SendUPPAproxRateSecondsSimulation extends Simulation with WithScenarios {
+class VerifyUPPAproxRateSecondsSimulationContinuous extends Simulation with WithScenarios {
 
   val stepConfs = conf.getConfigList("sendUPPAproxRateSecondsSimulation.steps")
   val stepCount = stepConfs.size()
@@ -18,6 +18,7 @@ class SendUPPAproxRateSecondsSimulation extends Simulation with WithScenarios {
     )
   }
 
+  val onlyTheseDevices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
   val devices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
 
   val constantUsers: Int = (0 until stepCount).toList.map(i => steps(i).head).max
@@ -25,11 +26,15 @@ class SendUPPAproxRateSecondsSimulation extends Simulation with WithScenarios {
 
   logger.info(s"injecting $constantUsers users during $during minutes")
   logger.info(s"execution plan ($stepCount steps):")
+
   for (i <- 0 until stepCount) {
     logger.info(f"[$i%02d] reach ${steps(i).head} rps in ${steps(i)(1)} min, hold for ${steps(i)(2)} min")
   }
 
-  setUp(sendScenarioWithFileData(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
+  setUp(
+    verifyScenario(devices)
+      .inject(constantUsersPerSec(constantUsers).during(during minutes))
+  )
     .throttle(
       (0 until stepCount).toList.flatMap { i =>
         List(
@@ -38,6 +43,7 @@ class SendUPPAproxRateSecondsSimulation extends Simulation with WithScenarios {
         )
       }
     )
-    .protocols(niomonProtocol)
+    .protocols(verificationProtocol)
 
 }
+
