@@ -52,21 +52,27 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
     val req = new HttpPost("https://api.console." + EnvConfigs.ENV + ".ubirch.com/ubirch-web-ui/api/v1/devices/elephants")
     req.addHeader("Authorization", "bearer " + authToken)
     req.addHeader("Content-Type", "application/json")
-    val reqBody = s"""{
-    "reqType": "creation",
-    "tags": "gatling",
-    "prefix": "",
-    "devices": [
-        {
-            "hwDeviceId": "${uuid.toString}",
-            "description": "gatling test",
-            "deviceType": "default_type",
-            "apiConfig": "",
-            "deviceConfig": "",
-            "groups": []
-        }
-      ]
-    }"""
+    val reqBody =
+      s"""
+        |{
+        |  "reqType":"creation",
+        |  "tags":[
+        |    "gatling"
+        |  ],
+        |  "prefix":"gatling",
+        |  "devices":[
+        |    {
+        |      "hwDeviceId": "${uuid.toString}",
+        |      "description":"gatling",
+        |      "deviceType":"default_type",
+        |      "apiConfig":"",
+        |      "deviceConfig":"",
+        |      "claimingTags":[],
+        |      "groups":[]
+        |    }
+        |  ]
+        |}
+        |""".stripMargin
     req.setEntity(new StringEntity(reqBody))
     req
   }
