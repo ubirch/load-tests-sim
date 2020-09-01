@@ -373,6 +373,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
   }
 
   def main(args: Array[String]): Unit = {
+    logger.info("Working Stage: " + EnvConfigs.ENV)
     logger.info("Automatic Key Registration is: " + (if (DeviceGenerationFileConfigs.runKeyRegistration) "ON" else "OFF"))
     logger.info("Console Registration is: " + (if (DeviceGenerationFileConfigs.consoleRegistration) "ON" else "OFF"))
     if (DeviceGenerationFileConfigs.consoleRegistration) {
