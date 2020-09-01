@@ -43,13 +43,13 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
   def encode(data: String) = Base64.getEncoder.encodeToString(data.getBytes)
 
   def simpleAuthTestConsole(authToken: String) = {
-    val req = new HttpGet("https://api.console.dev.ubirch.com/ubirch-web-ui/api/v1/users/accountInfo")
+    val req = new HttpGet("https://api.console." + EnvConfigs.ENV + ".ubirch.com/ubirch-web-ui/api/v1/users/accountInfo")
     req.addHeader("Authorization", "bearer " + authToken)
     req
   }
 
   def addDeviceInConsole(uuid: UUID, authToken: String) = {
-    val req = new HttpPost("https://api.console.dev.ubirch.com/ubirch-web-ui/api/v1/devices/elephants")
+    val req = new HttpPost("https://api.console." + EnvConfigs.ENV + ".ubirch.com/ubirch-web-ui/api/v1/devices/elephants")
     req.addHeader("Authorization", "bearer " + authToken)
     req.addHeader("Content-Type", "application/json")
     val reqBody = s"""{
@@ -63,13 +63,16 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
             "deviceType": "default_type",
             "apiConfig": "",
             "deviceConfig": "",
-            "groups": []}]}"""
+            "groups": []
+        }
+      ]
+    }"""
     req.setEntity(new StringEntity(reqBody))
     req
   }
 
   def getDeviceConfigFromConsole(uuid: UUID, authToken: String) = {
-    val req = new HttpGet(s"https://api.console.dev.ubirch.com/ubirch-web-ui/api/v1/devices/${uuid.toString}")
+    val req = new HttpGet(s"https://api.console." + EnvConfigs.ENV + s".ubirch.com/ubirch-web-ui/api/v1/devices/${uuid.toString}")
     req.addHeader("Authorization", "bearer " + authToken)
     req.addHeader("Content-Type", "application/json")
     req
@@ -255,11 +258,11 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
         val addRequest = addDeviceInConsole(uuid, accessToken)
         val responseAdd = client.execute(addRequest)
         val bodyValue = readEntity(responseAdd)
-        //logger.info(s"bodyValue = $bodyValue")
+        logger.info(s"bodyValue = $bodyValue")
 
         val configReq = client.execute(getDeviceConfigFromConsole(uuid, accessToken))
         val response = readEntity(configReq)
-        //logger.info(s"deviceConfig = $response")
+        logger.info(s"deviceConfig = $response")
         val deviceConfig = {
           val data = compact(getDeviceConfig(response).children.head)
           if (data.startsWith("\"") && data.endsWith("\"") && data.contains("\\"))
@@ -308,7 +311,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
   }
 
   def registerForConsole(uuid: UUID): Unit = {
-    logger.info("Please go to https://console.dev.ubirch.com/devices/list and add the device. You can use the id that is presented above.")
+    logger.info("Please go to https://console." + EnvConfigs.ENV + ".ubirch.com/devices/list and add the device. You can use the id that is presented above.")
     logger.info("Copy this UUID " + uuid.toString + " and add it as a Thing, copy the config json and paste it here.")
     logger.info("Paste the device config. To finish enter ...")
     val config = readLines("")
