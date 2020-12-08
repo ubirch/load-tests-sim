@@ -159,17 +159,17 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
 
       val dataGeneration = DataGeneration(deviceGeneration.UUID, deviceGeneration.deviceCredentials, upp, hash)
 
-      WriteFileControl(
-        DataGenerationFileConfigs.numberOfMessagesPerFile,
-        DataGenerationFileConfigs.path,
-        DataGenerationFileConfigs.directory,
-        DataGenerationFileConfigs.fileName,
-        "Verification_",
-        DataGenerationFileConfigs.ext
-      ).secured { w =>
-          val dataToStore = compact(Extraction.decompose(dataGeneration))
-          w.append(dataToStore)
-        }
+//      WriteFileControl(
+//        DataGenerationFileConfigs.numberOfMessagesPerFile,
+//        DataGenerationFileConfigs.path,
+//        DataGenerationFileConfigs.directory,
+//        DataGenerationFileConfigs.fileName,
+//        "Verification_",
+//        DataGenerationFileConfigs.ext
+//      ).secured { w =>
+//          val dataToStore = compact(Extraction.decompose(dataGeneration))
+//          w.append(dataToStore)
+//        }
 
       Map(
         "UPP" -> upp,
