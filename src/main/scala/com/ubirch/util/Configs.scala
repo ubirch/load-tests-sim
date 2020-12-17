@@ -33,3 +33,12 @@ object EnvConfigs extends ConfigBase {
   val serverKey: PubKey = AbstractUbirchClient.createServerKey(serverKeyBytes)
 
 }
+
+object MqttConf extends ConfigBase {
+  final val BROKER_URL = conf.getString("mqtt.brokerUrl")
+  final val USER_NAME = conf.getString("mqtt.userName")
+  final val PASSWORD = conf.getString("mqtt.password")
+  final val IN_QUEUE_PREFIX = conf.getString("mqtt.inQueuePrefix")
+  final val OUT_QUEUE_PREFIX = conf.getString("mqtt.outQueuePrefix")
+}
+
