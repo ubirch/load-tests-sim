@@ -1,6 +1,7 @@
 package com.ubirch.simulations
 
 import com.ubirch.DeviceGenerator
+import com.ubirch.util.Continuous
 import io.gatling.core.Predef._
 
 import scala.concurrent.duration._
@@ -19,9 +20,10 @@ class SendUPPAproxRateSecondsSimulationContinuous extends Simulation with WithSc
     )
   }
 
+  private val consoleRegistration: Boolean = conf.getBoolean("deviceGenerator.consoleRegistration")
   val onlyTheseDevices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
   val devices = DeviceGenerator.loadDevices(onlyTheseDevices)
-  val continuous = new Continuous(devices)
+  val continuous = new Continuous(devices, consoleRegistration)
 
   logger.info("Found {} devices", continuous.length)
 

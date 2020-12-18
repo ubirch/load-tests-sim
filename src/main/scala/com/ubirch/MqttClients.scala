@@ -7,7 +7,7 @@ import org.eclipse.paho.client.mqttv3._
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 
 import java.util.UUID
-import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.util.concurrent.{ CountDownLatch, TimeUnit }
 
 trait MqttClients {
 
@@ -88,10 +88,9 @@ class DefaultMqttClients extends MqttClients with LazyLogging {
       message,
       null,
       listener(
-        _ => {
-          sent = sent + 1
-        },
-        (_, e) => logger.error(s"error_publishing_to=$topic", e))
+        _ => { sent = sent + 1 },
+        (_, e) => logger.error(s"error_publishing_to=$topic", e)
+      )
     )
   }
 
@@ -107,7 +106,7 @@ class DefaultMqttClients extends MqttClients with LazyLogging {
   }
 
   sys.addShutdownHook(
-    if(client != null && client.isConnected) {
+    if (client != null && client.isConnected) {
       logger.info("Shutting mqtt connection...")
       client.disconnect()
       client.close()
