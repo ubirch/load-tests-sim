@@ -10,6 +10,8 @@ case class Data(upp: Array[Byte], hash: Array[Byte], password: String, device: U
 
 class Continuous(deviceGenerations: Seq[DeviceGeneration], consoleRegistration: Boolean) {
 
+  require(deviceGenerations.nonEmpty, "No Devices Found")
+
   val length: Int = deviceGenerations.length
 
   val generators: Seq[(DeviceGeneration, PayloadGenerator)] = deviceGenerations.map { dataGeneration =>
