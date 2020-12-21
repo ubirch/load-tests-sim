@@ -2,14 +2,14 @@ package com.ubirch
 
 import com.google.protobuf.ByteString
 import com.typesafe.scalalogging.LazyLogging
-import com.ubirch.models.{ DeviceGeneration, FlowInPayload, FlowOutPayload }
-import com.ubirch.util.{ ConfigBase, Continuous, MqttConf }
+import com.ubirch.models.{DeviceGeneration, FlowInPayload, FlowOutPayload}
+import com.ubirch.util.{ConfigBase, Continuous, MqttConf}
 import monix.eval.Task
-import org.joda.time.DateTime
-
+import org.joda.time.{DateTime, Duration}
 import java.nio.file.Paths
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
+
 import scala.language.postfixOps
 
 object MqttInjector extends LazyLogging with ConfigBase {
@@ -45,7 +45,8 @@ object MqttInjector extends LazyLogging with ConfigBase {
       }
 
       if((crr % max) == 0) {
-        logger.info(s"($clid) DONE")
+        val endTime = new DateTime()
+        logger.info(s"($clid) DONE - " + new Duration(endTime, startTime).abs().toString)
       }
       Task.delay(m)
     })
@@ -54,6 +55,7 @@ object MqttInjector extends LazyLogging with ConfigBase {
       val data = continuous.feeder2.take(1).toList.headOption.get
       val payload = FlowInPayload(data.device.toString, data.password, ByteString.copyFrom(data.upp)).toByteArray
       val mqttPayload = mqtt.toMqttMessage(qos = 2, retained = false, payload = payload)
+      Thread.sleep(1)
       mqtt.publish(inTopic(data.device), data.device, mqttPayload)
     }
 
@@ -62,13 +64,13 @@ object MqttInjector extends LazyLogging with ConfigBase {
   def main(args: Array[String]): Unit = {
 
     def cli = "client_load_carlos_test_" //Change me if other clients have the same id
-    def max = 1000
-    def whenLog = 100
-    def maxClients = 1
+    def max = 50000
+    def whenLog = 1000
+    def maxClients = 3
 
     val onlyTheseDevices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
     val devices: List[DeviceGeneration] = DeviceGenerator.loadDevices(onlyTheseDevices)
-    (0 until maxClients).foreach(i => go(max, whenLog, cli + i, devices))
+    (0 until maxClients).par.foreach(i => go(max, whenLog, cli + i, devices))
 
   }
 
