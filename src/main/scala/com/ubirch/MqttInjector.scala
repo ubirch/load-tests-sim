@@ -8,6 +8,7 @@ import monix.eval.Task
 import org.joda.time.{DateTime, Duration}
 import java.nio.file.Paths
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 
 import scala.language.postfixOps
@@ -64,13 +65,16 @@ object MqttInjector extends LazyLogging with ConfigBase {
   def main(args: Array[String]): Unit = {
 
     def cli = "client_load_carlos_test_" //Change me if other clients have the same id
-    def max = 50000
-    def whenLog = 1000
-    def maxClients = 3
+    def max = 10000
+    def whenLog = 100
+    def maxClients = 1
 
     val onlyTheseDevices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
     val devices: List[DeviceGeneration] = DeviceGenerator.loadDevices(onlyTheseDevices)
     (0 until maxClients).par.foreach(i => go(max, whenLog, cli + i, devices))
+
+
+    new CountDownLatch(1).await()
 
   }
 
