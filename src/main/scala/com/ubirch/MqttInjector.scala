@@ -63,9 +63,14 @@ object MqttInjector extends LazyLogging with ConfigBase {
 
   def main(args: Array[String]): Unit = {
 
+    def cli = "client_load_carlos_test_" //Change me if other clients have the same id
+    def max = 1000
+    def whenLog = 100
+    def maxClients = 0 // 0 means 1
+
     val onlyTheseDevices: List[String] = conf.getString("simulationDevices").split(",").toList.filter(_.nonEmpty)
     val devices: List[DeviceGeneration] = DeviceGenerator.loadDevices(onlyTheseDevices)
-    (0 to 0).foreach(i => go(1000, 100, "client_load_carlos_test_" + i, devices))
+    (0 to maxClients).foreach(i => go(max, whenLog, cli + i, devices))
 
   }
 
