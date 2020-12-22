@@ -40,5 +40,10 @@ object MqttConf extends ConfigBase {
   final val PASSWORD = conf.getString("mqtt.password")
   final val IN_QUEUE_PREFIX = conf.getString("mqtt.inQueuePrefix")
   final val OUT_QUEUE_PREFIX = conf.getString("mqtt.outQueuePrefix")
+
+  final val CLI = conf.getString("mqtt.test.cli")
+  final val MAX = conf.getInt("mqtt.test.max")
+  final val WHEN_LOG = conf.getInt("mqtt.test.whenLog")
+  final val MAX_CLIENTS = conf.getInt("mqtt.test.maxClients")
 }
 
