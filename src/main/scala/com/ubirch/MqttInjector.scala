@@ -50,7 +50,7 @@ object MqttInjector extends LazyLogging with ConfigBase {
     (1 to max).map { _ =>
       val data = continuous.feeder2.take(1).toList.headOption.get
       val payload = FlowInPayload(data.device.toString, data.password, ByteString.copyFrom(data.upp)).toByteArray
-      val mqttPayload = mqtt.toMqttMessage(qos = 2, retained = false, payload = payload)
+      val mqttPayload = mqtt.toMqttMessage(qos = 0, retained = false, payload = payload)
       Thread.sleep(1)
       mqtt.publish(inTopic(data.device), data.device, mqttPayload)
     }
