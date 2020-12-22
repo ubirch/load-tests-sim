@@ -69,7 +69,7 @@ object MqttInjector extends LazyLogging with ConfigBase {
       val splits = (0 to maxClients).map { i =>
         devices.slice(buckets * i, buckets * (i + 1))
       }.toVector
-      require(splits.size == maxClients)
+      require(splits.size == maxClients, splits.size + " - " + maxClients)
       splits
     } else {
       (0 until maxClients).map(_ => devices).toVector
