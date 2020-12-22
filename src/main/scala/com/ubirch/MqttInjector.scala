@@ -25,7 +25,7 @@ object MqttInjector extends LazyLogging with ConfigBase {
     val startTime = new DateTime()
     logger.info("Starting Subscription @ " + startTime.toString + " max=" + max)
     val received = new AtomicInteger(0)
-    mqtt.subscribe(outAllTopic, 1)((_, m) => {
+    mqtt.subscribe(outAllTopic, 0)((_, m) => {
       val crr = received.incrementAndGet()
       if ((crr % whenLog) == 0) {
         val endTime = new DateTime()
