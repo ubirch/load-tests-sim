@@ -34,13 +34,8 @@ object MqttInjector extends LazyLogging with ConfigBase {
     mqtt.subscribe(outAllTopic, 0)((_, m) => {
       val crr = received.incrementAndGet()
       if ((crr % whenLog) == 0) {
-        val endTime = new DateTime()
-        val diffInMillis = (endTime.getMillis - startTime.getMillis) / whenLog
         val pl = FlowOutPayload.parseFrom(m.getPayload)
-        logger.info(s"($cli) avg_processing ->" +
-          " time_per_message=" + diffInMillis +
-          " ms processed_messages=" + crr.toString +
-          " status=" + pl.status)
+        logger.info(s"($cli) processed_messages=" + crr.toString + " status=" + pl.status)
       }
 
       if (crr == max) {
