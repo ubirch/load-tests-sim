@@ -1,5 +1,4 @@
 import json
-import random
 import sys
 
 usage = " usage:\n" \
@@ -11,14 +10,14 @@ if len(sys.argv) < 2:
 
 in_file = sys.argv[1]
 out_file = "identities.json"
-roles = ["center-a", "center-b", "center-c", "center-d", "center-e"]
+role = "center-a"
 identities = []
 
 with open(in_file) as f:
     for line in f:
         device = json.loads(line)
         identity = {
-            "role": random.choice(roles),
+            "role": role,
             "uuid": device["UUID"],
             "password": device["deviceCredentials"]["password"]
         }
