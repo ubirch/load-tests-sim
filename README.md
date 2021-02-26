@@ -146,7 +146,19 @@ Shuffle/randomize the data files but having them previously stored or keep "queu
    
 ## Go-Client Certify Test
 
-### Data Loading
+### Device Registration
+
+We want to register device on the console only and not create keys. Please note the
+deviceGenerator.runKeyRegistration key in /src/main/resources/application.go.conf
+be false. If true, it will create keys and interrupt the Go-Client Warmup
+
+```shell
+java -cp target/ubirch-load-test-1.0.0.jar com.ubirch.DeviceGenerator 
+```
+
+### Data Transformation
+
+We want to transform the format the DeviceGenerator creates and create a file that will be loaded in the Go-Client/Certifier
 
 TODO
 

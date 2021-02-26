@@ -63,7 +63,7 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
           "driver@test.com",
           //TODO: This needs to adjusted to fit testing data after file loading is ready
           List(Symbol("vaccination-center-altoetting"), Symbol("certification-vaccination"))
-        //List(Symbol(session("hardware_id").as[String]))
+        //List(Symbol("role-"+session("hardware_id").as[String]))
         )
         write(token)
       })
