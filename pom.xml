@@ -50,6 +50,13 @@
         </developer>
     </developers>
 
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
+
     <properties>
 
         <maven.compiler.source>1.8</maven.compiler.source>
