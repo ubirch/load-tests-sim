@@ -10,15 +10,16 @@ if len(sys.argv) < 2:
 
 in_file = sys.argv[1]
 out_file = "identities.json"
-role = "center-a"
+role_prefix = "role-"
 identities = []
 
 with open(in_file) as f:
     for line in f:
         device = json.loads(line)
+        uid = device["UUID"]
         identity = {
-            "role": role,
-            "uuid": device["UUID"],
+            "role": role_prefix + uid,
+            "uuid": uid,
             "password": device["deviceCredentials"]["password"]
         }
         identities.append(identity)
