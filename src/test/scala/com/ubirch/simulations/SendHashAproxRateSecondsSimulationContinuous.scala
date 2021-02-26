@@ -6,7 +6,7 @@ import io.gatling.core.Predef._
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class SendUPPAproxRateSecondsSimulationContinuous extends Simulation with WithScenarios {
+class SendHashAproxRateSecondsSimulationContinuous extends Simulation with WithScenarios {
 
   val stepConfs = conf.getConfigList("sendUPPAproxRateSecondsSimulation.steps")
   val stepCount = stepConfs.size()
@@ -36,7 +36,7 @@ class SendUPPAproxRateSecondsSimulationContinuous extends Simulation with WithSc
   }
 
   setUp(
-    sendScenarioWithContinuousData(continuous)
+    sendHashScenarioWithContinuousData(continuous)
       .inject(constantUsersPerSec(constantUsers.toDouble).during(during minutes))
   )
     .throttle(
@@ -47,7 +47,7 @@ class SendUPPAproxRateSecondsSimulationContinuous extends Simulation with WithSc
         )
       }
     )
-    .protocols(niomonProtocol)
+    .protocols(certifyProtocol)
 
 }
 

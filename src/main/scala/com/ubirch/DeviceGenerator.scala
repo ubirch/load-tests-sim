@@ -244,7 +244,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
     }
   }
 
-  def registerForConsoleAutomaticCreation: Unit = {
+  def registerForConsoleAutomaticCreation(): Unit = {
 
     logger.info("Copy your console access token here (without the \"bearer\")")
     logger.info("To finish, enter ...")
@@ -258,7 +258,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
       val numberOfDevicesToAdd = readLines("").toInt
       logger.info(s"Adding $numberOfDevicesToAdd devices with random UUIDs to your console")
       logger.info("------------------------------------------")
-      def addDevice = {
+      def addDevice(): Unit = {
 
         val uuid = UUID.randomUUID()
         val addRequest = addDeviceInConsole(uuid, accessToken)
@@ -307,7 +307,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
       }
 
       for { i <- 1 to numberOfDevicesToAdd } {
-        addDevice
+        addDevice()
         if (i % 5 == 0) logger.info(s"Added $i out of $numberOfDevicesToAdd devices")
       }
     } else {
@@ -358,7 +358,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
     val uuid = UUID.randomUUID()
 
     if (DeviceGenerationFileConfigs.consoleRegistration)
-      if (DeviceGenerationFileConfigs.consoleAutomaticCreation) registerForConsoleAutomaticCreation
+      if (DeviceGenerationFileConfigs.consoleAutomaticCreation) registerForConsoleAutomaticCreation()
       else {
         logger.info("Creating device with id: " + uuid.toString)
         registerForConsole(uuid)
@@ -368,6 +368,7 @@ object DeviceGenerator extends ConfigBase with WithJsonFormats with LazyLogging 
       registerForCumulocity(uuid)
     }
 
+    @tailrec
     def more(): Unit = {
       val continue = readLine("Add another device? Y/n ")
       continue.toLowerCase().trim match {

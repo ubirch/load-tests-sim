@@ -3,8 +3,6 @@ package com.ubirch.simulations
 import com.ubirch.DataGenerator
 import io.gatling.core.Predef._
 
-import scala.language.postfixOps
-
 class SendAndVerifySimulation extends Simulation with WithScenarios {
 
   val numberOfUsers: Int = conf.getInt("sendAndVerifySimulation.numberOfUsers")

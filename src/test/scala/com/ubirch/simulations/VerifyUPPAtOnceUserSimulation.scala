@@ -2,8 +2,6 @@ package com.ubirch.simulations
 
 import io.gatling.core.Predef._
 
-import scala.language.postfixOps
-
 class VerifyUPPAtOnceUserSimulation extends Simulation with WithScenarios {
 
   val numberOfUsers: Int = conf.getInt("verifyUPPAtOnceUserSimulation.numberOfUsers")

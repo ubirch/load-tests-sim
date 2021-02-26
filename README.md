@@ -143,6 +143,15 @@ some old version be there.
 
 5. Note that if you sent data in a random/shuffled way, it is likely that the verification will fail, it is recommended in this case to either: 
 Shuffle/randomize the data files but having them previously stored or keep "queue" as sending ordering.
+   
+## Go-Client Certify Test
 
+### Data Loading
 
+TODO
 
+### Run Test
+
+```shell
+mvn gatling:test -Dgatling.simulationClass=com.ubirch.simulations.SendHashAproxRateSecondsSimulationContinuous  -Dconfig.file=./src/main/resources/application.go.conf
+```

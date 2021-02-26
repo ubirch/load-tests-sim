@@ -29,7 +29,7 @@ class SendUPPAproxRateSecondsSimulation extends Simulation with WithScenarios {
     logger.info(f"[$i%02d] reach ${steps(i).head} rps in ${steps(i)(1)} min, hold for ${steps(i)(2)} min")
   }
 
-  setUp(sendScenarioWithFileData(devices).inject(constantUsersPerSec(constantUsers).during(during minutes)))
+  setUp(sendScenarioWithFileData(devices).inject(constantUsersPerSec(constantUsers.toDouble).during(during minutes)))
     .throttle(
       (0 until stepCount).toList.flatMap { i =>
         List(

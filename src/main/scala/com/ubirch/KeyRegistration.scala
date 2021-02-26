@@ -2,12 +2,11 @@ package com.ubirch
 
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
-import java.util.{Base64, TimeZone, UUID}
+import java.util.{ Base64, TimeZone, UUID }
 
 import com.typesafe.scalalogging.LazyLogging
-import com.ubirch.DeviceGenerator.logger
-import com.ubirch.models.{AbstractUbirchClient, DeviceGeneration, ReadFileControl, SimpleProtocolImpl}
-import com.ubirch.util.{ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats}
+import com.ubirch.models.{ AbstractUbirchClient, DeviceGeneration, ReadFileControl, SimpleProtocolImpl }
+import com.ubirch.util.{ ConfigBase, DeviceGenerationFileConfigs, EnvConfigs, WithJsonFormats }
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
@@ -90,7 +89,7 @@ object KeyRegistration extends ConfigBase with WithJsonFormats with LazyLogging 
     logger.info("Working Stage: " + EnvConfigs.ENV)
     logger.info("Key Registration Started")
 
-    ReadFileControl(
+    val _ = ReadFileControl(
       DeviceGenerationFileConfigs.path,
       DeviceGenerationFileConfigs.directory,
       DeviceGenerationFileConfigs.fileName,

@@ -34,7 +34,6 @@ case class WriteFileControl(lines: Int, path: String, directory: String, fileNam
       logger.debug("Closing final stream")
       close()
     }
-
   }
 
   def fn = {

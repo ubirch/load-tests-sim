@@ -3,18 +3,17 @@ package com.ubirch
 import java.util.UUID
 
 import com.typesafe.scalalogging.LazyLogging
-import com.ubirch.DeviceGenerator.logger
-import com.ubirch.crypto.{PrivKey, PubKey}
+import com.ubirch.crypto.{ PrivKey, PubKey }
 import com.ubirch.models._
 import com.ubirch.util._
 import org.json4s.Extraction
 import org.json4s.jackson.JsonMethods._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 private class Total {
   @volatile private var added = 0
-  def inc: Unit = added = added + 1
+  def inc(): Unit = added = added + 1
   def total: Int = added
 }
 
@@ -46,7 +45,7 @@ class DataGenerator(total: Total, deviceGeneration: DeviceGeneration, clientKey:
               val data = DataGeneration(deviceGeneration.UUID, deviceGeneration.deviceCredentials, upp, hash)
               val dataToStore = compact(Extraction.decompose(data))
               writer.append(dataToStore)
-              total.inc
+              total.inc()
             }
         }
 

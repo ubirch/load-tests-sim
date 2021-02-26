@@ -33,7 +33,7 @@ class VerifyUPPAproxRateSecondsSimulationContinuous extends Simulation with With
 
   setUp(
     verifyScenario(devices)
-      .inject(constantUsersPerSec(constantUsers).during(during minutes))
+      .inject(constantUsersPerSec(constantUsers.toDouble).during(during minutes))
   )
     .throttle(
       (0 until stepCount).toList.flatMap { i =>

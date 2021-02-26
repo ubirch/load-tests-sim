@@ -1,9 +1,11 @@
 package com.ubirch.simulations
 
 import java.nio.charset.StandardCharsets
+import java.security.SecureRandom
 import java.util.Base64
 
 import com.typesafe.scalalogging.LazyLogging
+import com.ubirch.crypto.utils.Utils
 import com.ubirch.models._
 import com.ubirch.util.{ EnvConfigs, _ }
 import com.ubirch.{ DataGenerator, DeviceGenerator, KeyRegistration }
@@ -13,8 +15,9 @@ import io.gatling.core.structure.ScenarioBuilder
 import io.gatling.http.Predef.{ HttpHeaderNames, HttpHeaderValues, http, _ }
 import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.HttpRequestBuilder
-import org.json4s.Extraction
+import org.json4s.JString
 import org.json4s.jackson.JsonMethods._
+import org.json4s.jackson.Serialization.write
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -27,12 +30,16 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
   private val consoleRegistration: Boolean = conf.getBoolean("deviceGenerator.consoleRegistration")
   private val maxConnections: Int = conf.getInt("maxConnectionsForSendingUPPSimulation")
 
+  private val sendHashUrl: String = "https://api.certify." + EnvConfigs.ENV + ".ubirch.com/api/v1/anchor-test"
+  //private val sendHashUrl: String = "http://localhost:8081/api/v1/anchor-test"
   private val sendUPPUrl: String = "https://niomon." + EnvConfigs.ENV + ".ubirch.com"
   private val verifyUrl: String = "https://verify." + EnvConfigs.ENV + ".ubirch.com/api/upp/verify"
-  private val verifyWithAnchorUrl: String = verifyUrl + "/anchor"
+  //private val verifyWithAnchorUrl: String = verifyUrl + "/anchor"
   private val verifyWithRecordUrl: String = verifyUrl + "/record"
 
-  private val send: HttpRequestBuilder = {
+  val gen = new SecureRandom()
+
+  private val sendUPP: HttpRequestBuilder = {
     http("Send UPP data")
       .post("/")
       .header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationOctetStream)
@@ -42,6 +49,29 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
       .header("Authorization", session => "Basic " + session("auth").as[String])
       .body(ByteArrayBody(session => AbstractUbirchClient.toBytesFromHex(session("UPP").as[String])))
   }
+
+  private val sendHash: HttpRequestBuilder = {
+    http("Send HASH data")
+      .post(sendHashUrl)
+      .header(HttpHeaderNames.ContentType, HttpHeaderValues.TextPlain)
+      .header("X-Test-Token", _ => {
+        val token = Token(
+          "TEST_IS_A_TEST",
+          JString("THIS IS A TEST"),
+          "test-driver",
+          "Mr Test Driver",
+          "driver@test.com",
+          //TODO: This needs to adjusted to fit testing data after file loading is ready
+          List(Symbol("vaccination-center-altoetting"), Symbol("certification-vaccination"))
+        //List(Symbol(session("hardware_id").as[String]))
+        )
+        write(token)
+      })
+      .body(ByteArrayBody { _ =>
+        Base64.getEncoder.encode(Utils.secureRandomBytes(32))
+      })
+  }
+
   private val verify: HttpRequestBuilder = {
     http("Verify UPP data")
       .post(verifyWithRecordUrl)
@@ -62,6 +92,12 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
     .baseUrl(sendUPPUrl)
     .shareConnections
     .maxConnectionsPerHost(maxConnections)
+
+  val certifyProtocol: HttpProtocolBuilder = http
+    .baseUrl(sendHashUrl)
+    .shareConnections
+    .maxConnectionsPerHost(maxConnections)
+
   val verificationProtocol: HttpProtocolBuilder = http.baseUrl(verifyUrl)
 
   private def prepareData(suffixes: List[String]): SourceFeederBuilder[String] = {
@@ -107,15 +143,19 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
   }
 
   def sendScenarioWithFileData(suffixes: List[String]): ScenarioBuilder = {
-    getScenarioWithFileData("Device Message (UPPs)", suffixes, send)
+    getScenarioWithFileData("Device Message (UPPs)", suffixes, sendUPP)
   }
 
   def sendScenarioWithContinuousData(continuous: Continuous): ScenarioBuilder = {
-    getScenarioWithContinuousData("Device Message (Continuous UPPs)", continuous, send)
+    getScenarioWithContinuousData("Device Message (Continuous UPPs)", continuous, sendUPP)
+  }
+
+  def sendHashScenarioWithContinuousData(continuous: Continuous): ScenarioBuilder = {
+    getScenarioWithContinuousData("Device HASH Message (Continuous UPPs)", continuous, sendHash)
   }
 
   def sendAndVerifyScenario(suffixes: List[String]): ScenarioBuilder = {
-    getScenarioWithFileData("Device Message (UPPs)", suffixes, send)
+    getScenarioWithFileData("Device Message (UPPs)", suffixes, sendUPP)
       .pause(10 seconds)
       .exec(verify)
   }
@@ -157,19 +197,21 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
         .getBytes(StandardCharsets.UTF_8)
       val passwordAsBase64 = Base64.getEncoder.encodeToString(passwordAsBytes)
 
-      val dataGeneration = DataGeneration(deviceGeneration.UUID, deviceGeneration.deviceCredentials, upp, hash)
+      DataGeneration(deviceGeneration.UUID, deviceGeneration.deviceCredentials, upp, hash)
 
-//      WriteFileControl(
-//        DataGenerationFileConfigs.numberOfMessagesPerFile,
-//        DataGenerationFileConfigs.path,
-//        DataGenerationFileConfigs.directory,
-//        DataGenerationFileConfigs.fileName,
-//        "Verification_",
-//        DataGenerationFileConfigs.ext
-//      ).secured { w =>
-//          val dataToStore = compact(Extraction.decompose(dataGeneration))
-//          w.append(dataToStore)
-//        }
+      // Writes data to file after creating it.
+      //val dataGeneration = DataGeneration(deviceGeneration.UUID, deviceGeneration.deviceCredentials, upp, hash)
+      //      WriteFileControl(
+      //        DataGenerationFileConfigs.numberOfMessagesPerFile,
+      //        DataGenerationFileConfigs.path,
+      //        DataGenerationFileConfigs.directory,
+      //        DataGenerationFileConfigs.fileName,
+      //        "Verification_",
+      //        DataGenerationFileConfigs.ext
+      //      ).secured { w =>
+      //          val dataToStore = compact(Extraction.decompose(dataGeneration))
+      //          w.append(dataToStore)
+      //        }
 
       Map(
         "UPP" -> upp,
