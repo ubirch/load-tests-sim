@@ -15,9 +15,9 @@ import io.gatling.core.structure.ScenarioBuilder
 import io.gatling.http.Predef.{ HttpHeaderNames, HttpHeaderValues, http, _ }
 import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.HttpRequestBuilder
-import org.json4s.JString
+//import org.json4s.JString
 import org.json4s.jackson.JsonMethods._
-import org.json4s.jackson.Serialization.write
+//import org.json4s.jackson.Serialization.write
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -30,8 +30,8 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
   private val consoleRegistration: Boolean = conf.getBoolean("deviceGenerator.consoleRegistration")
   private val maxConnections: Int = conf.getInt("maxConnectionsForSendingUPPSimulation")
 
-  private val sendHashUrl: String = "https://api.certify." + EnvConfigs.ENV + ".ubirch.com/api/v1/anchor-test"
-  //private val sendHashUrl: String = "http://localhost:8081/api/v1/anchor-test"
+  //private val sendHashUrl: String = "https://api.certify." + EnvConfigs.ENV + ".ubirch.com/api/v1/anchor-test"
+  private val sendHashUrl: String = "http://localhost:8080"
   private val sendUPPUrl: String = "https://niomon." + EnvConfigs.ENV + ".ubirch.com"
   private val verifyUrl: String = "https://verify." + EnvConfigs.ENV + ".ubirch.com/api/upp/verify"
   //private val verifyWithAnchorUrl: String = verifyUrl + "/anchor"
@@ -52,21 +52,11 @@ trait WithScenarios extends ConfigBase with WithJsonFormats with LazyLogging {
 
   private val sendHash: HttpRequestBuilder = {
     http("Send HASH data")
-      .post(sendHashUrl)
+      // HERE no way to get the UUID here, so its hardcoded
+      .post(sendHashUrl + "/<UUID>>/hash")
       .header(HttpHeaderNames.ContentType, HttpHeaderValues.TextPlain)
-      .header("X-Test-Token", _ => {
-        val token = Token(
-          "TEST_IS_A_TEST",
-          JString("THIS IS A TEST"),
-          "test-driver",
-          "Mr Test Driver",
-          "driver@test.com",
-          //TODO: This needs to adjusted to fit testing data after file loading is ready
-          List(Symbol("vaccination-center-altoetting"), Symbol("certification-vaccination"))
-        //List(Symbol("role-"+session("hardware_id").as[String]))
-        )
-        write(token)
-      })
+      // HERE no way to get the password here, so its hardcoded
+      .header("X-Auth-Token", "<PASSWORD>")
       .body(ByteArrayBody { _ =>
         Base64.getEncoder.encode(Utils.secureRandomBytes(32))
       })
