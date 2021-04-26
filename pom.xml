@@ -81,7 +81,7 @@
         <jcl-over-slf4j.version>1.7.25</jcl-over-slf4j.version>
         <logstash-logback-encoder.version>5.3</logstash-logback-encoder.version>
         <simple.kafka.client.version>2.1.0</simple.kafka.client.version>
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <ubirch-protocol-java.version>2.0.0</ubirch-protocol-java.version>
 
         <!-- plugins -->
